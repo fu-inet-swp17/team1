@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = pdp11-games
+APPLICATION = retro11
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native
@@ -16,8 +16,11 @@ CFLAGS += -DDEVELHELP
 QUIET ?= 1
 
 # Modules to include:
+USEMODULE += xtimer
 USEMODULE += shell
 USEMODULE += shell_commands
-USEMODULE += ps
+
+# include application specific include path
+INCLUDES += -I$(CURDIR)/include
 
 include $(RIOTBASE)/Makefile.include
