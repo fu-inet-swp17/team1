@@ -21,7 +21,7 @@
 
 #include "dcmotor.h"
 #include "periph/pwm.h"
-#include "timex.h" /* for US_PER_SEC */
+#include "periph/gpio.h"
 
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
@@ -44,7 +44,7 @@ int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int channel, unsigned int freq, unsi
 
     dev->pwm = pwm;
     dev->channel = channel;
-    dev->frequency = freq;
+    dev->freq = freq;
     dev->res = res;
     dev->dir_a = dir_a;
     dev->dir_b = dir_b;

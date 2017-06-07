@@ -2,14 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "xtimer.h"
-#include "shell.h"
-#include "retro11_conf.h"
 #include "periph/gpio.h"
 #include "periph/pwm.h"
+#include "shell.h"
+#include "retro11_conf.h"
 #include "dcmotor.h"
 
-dcmotor motor_a, motor_b;
+dcmotor_t motor_a, motor_b;
 
 int set_speed_cmd(int argc, char **argv)
 {
@@ -21,8 +20,8 @@ int set_speed_cmd(int argc, char **argv)
   // TODO: Safe atoi.
   int value = atoi(argv[1]);
   printf("setting speed to %d.\n", value);
-  dcmotor_set_speed(*motor_a, speed);
-  dcmotor_set_speed(*motor_b, speed);
+  dcmotor_set_speed(&motor_a, value);
+  dcmotor_set_speed(&motor_b, value);
 
   return 0;
 }
@@ -36,13 +35,13 @@ int main(void)
 {
     printf("Second DC Motor trials.\n");
 
-    if (dcmotor_init(*motor_a, CONF_MOTOR_A_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_A_FREQ,
+    if (dcmotor_init(&motor_a, CONF_MOTOR_A_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_A_FREQ,
           CONF_MOTOR_A_RES, CONF_MOTOR_A_DIRA, CONF_MOTOR_A_DIRB) < 0) {
       puts("Error initializing motor a");
       return 0;
     }
 
-    if (dcmotor_init(*motor_b, CONF_MOTOR_B_PWM, CONF_MOTOR_B_PWM_CHAN, CONF_MOTOR_B_FREQ,
+    if (dcmotor_init(&motor_b, CONF_MOTOR_B_PWM, CONF_MOTOR_B_PWM_CHAN, CONF_MOTOR_B_FREQ,
           CONF_MOTOR_B_RES, CONF_MOTOR_B_DIRA, CONF_MOTOR_B_DIRB) < 0) {
       puts("Error initializing motor b");
       return 0;
