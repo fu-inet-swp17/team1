@@ -7,12 +7,14 @@
 #include "shell.h"
 #include "retro11_conf.h"
 #include "dcmotor.h"
+#include "multiplexer.h"
 
 dcmotor_t motor_a, motor_b;
+multiplexer_t multiplex;
 
 int set_speed_cmd(int argc, char **argv)
 {
-  if(argc < 2) {
+  if (argc < 2) {
     puts("usage: set_speed [speed]");
     return 0;
   }
@@ -26,15 +28,31 @@ int set_speed_cmd(int argc, char **argv)
   return 0;
 }
 
+int read_button_cmd(int argc, char **argv)
+{
+  if (argc < 2) {
+    puts("usage: read_button [address]");
+    return 0;
+  }
+
+  // TODO: Safe atoi.
+  int value = atoi(argv[1]);
+  printf("Adress %d", value);
+  printf(" : %d\n", multiplexer_receive(&multiplex, value));
+
+  return 0;
+}
+
 static const shell_command_t shell_commands[] = {
     { "set_speed", "set speed for motor", set_speed_cmd },
+    { "read_button", "read input of button", read_button_cmd },
     { NULL, NULL, NULL }
 };
 
 int main(void)
 {
     int32_t act_freq;
-    printf("Second DC Motor trials.\n");
+    printf("Welcome to Retro11.");
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
     if (act_freq <= 0) {
@@ -55,6 +73,14 @@ int main(void)
     }
 
     printf("Motor init done.\n");
+
+    if (multiplexer_init(&multiplex, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
+          CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C) < 0) {
+      puts("Erro initializing multiplexer");
+      return 0;
+    }
+
+    printf("Multiplexer is done.\n");
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
