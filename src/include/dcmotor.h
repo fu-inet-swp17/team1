@@ -24,6 +24,7 @@
 #define DCMOTOR_H
 
 #include "periph/pwm.h"
+#include "periph/gpio.h"
 
 #ifdef __cplusplus
 extern "C" {

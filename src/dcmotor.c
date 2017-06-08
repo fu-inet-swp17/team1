@@ -29,8 +29,15 @@
 int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int channel, uint32_t freq, uint16_t res,
     gpio_t dir_a, gpio_t dir_b)
 {
-    gpio_init(dir_a, GPIO_OUT);
-    gpio_init(dir_b, GPIO_OUT);
+    if (gpio_init(dir_a, GPIO_OUT) < 0) {
+      DEBUG("dcmotor_init: failed to init gpio %d\n", dir_a);
+      return -1;
+    }
+
+    if (gpio_init(dir_b, GPIO_OUT) < 0) {
+      DEBUG("dcmotor_init: failed to init gpio %d\n", dir_b);
+      return -1;
+    }
 
     pwm_set(pwm, channel, 0);
 
