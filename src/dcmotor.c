@@ -26,21 +26,13 @@
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
 
-int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int channel, unsigned int freq, unsigned int res,
-    unsigned int dir_a, unsigned int dir_b)
+int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int channel, uint32_t freq, uint16_t res,
+    gpio_t dir_a, gpio_t dir_b)
 {
-    int actual_frequency;
-    actual_frequency = pwm_init(pwm, channel, freq, res);
-
-    if (actual_frequency < 0) {
-      DEBUG("dcmotor_init: error initializing pwm %d.", pwm_t);
-      return -1;
-    }
-
-    pwm_set(pwm, channel, 0);
-
     gpio_init(dir_a, GPIO_OUT);
     gpio_init(dir_b, GPIO_OUT);
+
+    pwm_set(pwm, channel, 0);
 
     dev->pwm = pwm;
     dev->channel = channel;
@@ -52,7 +44,7 @@ int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int channel, unsigned int freq, unsi
     return 0;
 }
 
-void dcmotor_set_speed(dcmotor_t *dev, int speed)
+void dcmotor_set_speed(dcmotor_t *dev, int16_t speed)
 {
     if (speed == 0) {
       gpio_set(dev->dir_a);

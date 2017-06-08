@@ -33,16 +33,23 @@ static const shell_command_t shell_commands[] = {
 
 int main(void)
 {
+    int32_t act_freq;
     printf("Second DC Motor trials.\n");
 
-    if (dcmotor_init(&motor_a, CONF_MOTOR_A_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_A_FREQ,
-          CONF_MOTOR_A_RES, CONF_MOTOR_A_DIRA, CONF_MOTOR_A_DIRB) < 0) {
+    act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
+    if (act_freq <= 0) {
+      puts("Error initializing PWM.");
+      return 0;
+    }
+
+    if (dcmotor_init(&motor_a, CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, act_freq,
+          CONF_MOTOR_RES, CONF_MOTOR_A_DIRA, CONF_MOTOR_A_DIRB) < 0) {
       puts("Error initializing motor a");
       return 0;
     }
 
-    if (dcmotor_init(&motor_b, CONF_MOTOR_B_PWM, CONF_MOTOR_B_PWM_CHAN, CONF_MOTOR_B_FREQ,
-          CONF_MOTOR_B_RES, CONF_MOTOR_B_DIRA, CONF_MOTOR_B_DIRB) < 0) {
+    if (dcmotor_init(&motor_b, CONF_MOTOR_PWM, CONF_MOTOR_B_PWM_CHAN, act_freq,
+          CONF_MOTOR_RES, CONF_MOTOR_B_DIRA, CONF_MOTOR_B_DIRB) < 0) {
       puts("Error initializing motor b");
       return 0;
     }

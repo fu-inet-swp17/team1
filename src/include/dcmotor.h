@@ -35,10 +35,10 @@ extern "C" {
 typedef struct {
     pwm_t pwm;           /**< the PWM device driving the servo */
     int channel;            /**< the channel the servo is connected to */
-    unsigned int freq;      /**< frequency of PWM signal */
-    unsigned int res;       /**< resolution of PWM signal */
-    unsigned int dir_a;     /**< first pin to set direction */
-    unsigned int dir_b;     /**< second pin to set direction */
+    uint32_t freq;      /**< frequency of PWM signal */
+    uint16_t res;       /**< resolution of PWM signal */
+    gpio_t dir_a;     /**< first pin to set direction */
+    gpio_t dir_b;     /**< second pin to set direction */
 } dcmotor_t;
 
 /**
@@ -55,8 +55,8 @@ typedef struct {
  * @return                  0 on success
  * @return                  <0 on error
  */
-int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int pwm_channel, unsigned int freq,
-    unsigned int res, unsigned int dir_a, unsigned int dir_b);
+int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int pwm_channel, uint32_t freq,
+    uint16_t res, gpio_t dir_a, gpio_t dir_b);
 
 /**
  * @brief Set the dc motor to a specified speed
@@ -64,7 +64,7 @@ int dcmotor_init(dcmotor_t *dev, pwm_t pwm, int pwm_channel, unsigned int freq,
  * @param[in] dev           the dcmotor to set
  * @param[in] speed         the speed to set the dcmotor to (in the resolution range)
  */
-void dcmotor_set_speed(dcmotor_t *dev, int speed);
+void dcmotor_set_speed(dcmotor_t *dev, int16_t speed);
 
 #ifdef __cplusplus
 }

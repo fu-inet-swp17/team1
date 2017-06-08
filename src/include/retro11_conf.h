@@ -6,13 +6,19 @@ extern "C" {
 #endif
 
 /**
+ * @brief  Common Configuration Motor
+ * @{
+ */
+
+#define CONF_MOTOR_PWM          (PWM_DEV(0))
+#define CONF_MOTOR_FREQ           (1000U)
+#define CONF_MOTOR_RES            (0x0064)
+
+/**
  * @brief  Configuration for Motor A
  * @{
  */
-#define CONF_MOTOR_A_PWM          (PWM_DEV(0))
 #define CONF_MOTOR_A_PWM_CHAN     (0U)
-#define CONF_MOTOR_A_FREQ         (1000U)
-#define CONF_MOTOR_A_RES          (0x0064)
 #define CONF_MOTOR_A_DIRA         GPIO_PIN(PA,22)
 #define CONF_MOTOR_A_DIRB         GPIO_PIN(PA,23)
 /** @} */
@@ -21,12 +27,9 @@ extern "C" {
  * @brief  Configuration for Motor B
  * @{
  */
-#define CONF_MOTOR_B_PWM          (PWM_DEV(0))
 #define CONF_MOTOR_B_PWM_CHAN     (1U)
-#define CONF_MOTOR_B_FREQ         (1000U)
-#define CONF_MOTOR_B_RES          (0x0064)
-#define CONF_MOTOR_B_DIRA         GPIO_PIN(PA,28)
-#define CONF_MOTOR_B_DIRB         GPIO_PIN(PA,13)
+#define CONF_MOTOR_B_DIRA         GPIO_PIN(PA,13)
+#define CONF_MOTOR_B_DIRB         GPIO_PIN(PA,28)
 /** @} */
 
 #ifdef __cplusplus
