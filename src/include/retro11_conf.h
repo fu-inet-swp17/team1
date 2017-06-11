@@ -42,6 +42,13 @@ extern "C" {
 #define CONF_MULTIPLEXER_ADR_C    GPIO_PIN(PA,23)
 /** @} */
 
+/**
+ * @brief  Configuration for LED Stripe
+ * @{
+ */
+#define CONF_LED_STRIPE 	        GPIO_PIN(PB,3)
+/** @} */
+
 #ifdef __cplusplus
 }
 #endif
