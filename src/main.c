@@ -12,11 +12,14 @@
 #include "dcmotor.h"
 #include "multiplexer.h"
 #include "motor_controller.h"
+#include "neopixel.h"
+#include "irq.h"
 
 dcmotor_t motor_a, motor_b;
 multiplexer_t multiplexer;
 motor_controller_t motor_controller;
 kernel_pid_t mainPid;
+neopixel_t led_stripe;
 bool enableBtns = false;
 
 void int_multiplexer_receive(void *arg)
@@ -31,6 +34,76 @@ void int_multiplexer_receive(void *arg)
   msg.type = multiplexer.curr_addr;
   msg.content.value = 1;
   msg_send_int(&msg, mainPid);
+}
+
+int refresh_leds_cmd(int argc, char **argv)
+{
+  neopixel_show(&led_stripe);
+  return 0;
+}
+
+int set_led_cmd(int argc, char **argv){
+  if(argc < 5) {
+    puts("usage: set_led [led number] [red green blue]");
+    return 1;
+  }
+
+  int led = atoi(argv[1]);
+  color_rgb_t pixel;
+
+  if(led > led_stripe.led_count){
+    printf("invalid led number %d, smaller then led count %ld\n", led, led_stripe.led_count);
+    puts("usage: set_led [led number] [red] [green] [blue]\n");
+    return 1;
+  }
+
+  /* NOTE: If it overflows the user has to be more careful. */
+  pixel.r =	atoi(argv[2]);
+  pixel.g =	atoi(argv[3]);
+  pixel.b = atoi(argv[4]);
+
+  printf("r: 0x%x g: 0x%x, b: 0x%x for led %d/%ld\n", pixel.r, pixel.g, pixel.b, led, led_stripe.led_count);
+  neopixel_set_pixel_color(&led_stripe, led, pixel);
+
+  return 0;
+}
+
+int start_color_animation_cmd(int argc, char **argv)
+{
+  if (argc < 2) {
+    printf("start_color_animation: start_color_animation [rate]\n");
+    return 0;
+  }
+
+  int rate = atoi(argv[1]);
+
+  for(int k = 0; k < led_stripe.led_count; ++k) {
+    uint8_t *curr = &(led_stripe.pixels[k].r);
+    *(curr + (k % 3)) = 255;
+  }
+  neopixel_show(&led_stripe);
+
+  for (int i = 0;;++i) {
+
+    color_rgb_t curr;
+    for (int k = 0; k < led_stripe.led_count; ++k) {
+      int next = (k + 1) % led_stripe.led_count;
+      curr.r = led_stripe.pixels[next].r;
+      curr.g = led_stripe.pixels[next].g;
+      curr.b = led_stripe.pixels[next].b;
+      led_stripe.pixels[next].r = led_stripe.pixels[k].r;
+      led_stripe.pixels[next].g = led_stripe.pixels[k].g;
+      led_stripe.pixels[next].b = led_stripe.pixels[k].b;
+      led_stripe.pixels[k].r = curr.r;
+      led_stripe.pixels[k].g = curr.g;
+      led_stripe.pixels[k].b = curr.b;
+    }
+
+    xtimer_usleep(rate);
+    neopixel_show(&led_stripe);
+  }
+
+  return 0;
 }
 
 int set_speed_cmd(int argc, char **argv)
@@ -116,6 +189,9 @@ static const shell_command_t shell_commands[] = {
     { "set_speed", "set speed for motor", set_speed_cmd },
     { "read_button", "read input of button", read_button_cmd },
     { "start_reaction_game", "start reaction game mode", start_reaction_game_cmd },
+    { "set_led", "set led color", set_led_cmd },
+    { "refresh_leds", "refresh all leds", refresh_leds_cmd },
+    { "start_color_animation", "starts a sample color animation", start_color_animation_cmd },
     { NULL, NULL, NULL }
 };
 
@@ -149,6 +225,13 @@ int main(void)
 
     printf("Motor init done.\n");
 
+    if (neopixel_init(&led_stripe, 40, CONF_LED_STRIPE) < 0){
+     puts("Error initializing led stripe");
+      return 0;
+    }
+
+    printf("Neopixel init done.\n");
+
     if (multiplexer_init_int(&multiplexer, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
           CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_multiplexer_receive, NULL) < 0) {
       puts("Erro initializing multiplexer");
@@ -167,6 +250,8 @@ int main(void)
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+
+    neopixel_free(&led_stripe);
 
     return 0;
 }
