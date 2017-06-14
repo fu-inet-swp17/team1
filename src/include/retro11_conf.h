@@ -32,6 +32,16 @@ extern "C" {
 #define CONF_MOTOR_B_DIRB         GPIO_PIN(PA,28)
 /** @} */
 
+/**
+ * @brief  Configuration for Multiplexer
+ * @{
+ */
+#define CONF_MULTIPLEXER_RECV     GPIO_PIN(PA,18)
+#define CONF_MULTIPLEXER_ADR_A    GPIO_PIN(PB,22)
+#define CONF_MULTIPLEXER_ADR_B    GPIO_PIN(PB,2)
+#define CONF_MULTIPLEXER_ADR_C    GPIO_PIN(PB,23)
+/** @} */
+
 #ifdef __cplusplus
 }
 #endif
