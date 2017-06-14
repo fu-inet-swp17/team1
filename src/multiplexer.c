@@ -124,13 +124,15 @@ int multiplexer_int_enable(multiplexer_t *dev)
   if (dev->with_int < 0)
     return -1;
 
-  return gpio_irq_enable(dev->receive);
+  gpio_irq_enable(dev->receive);
+  return 0;
 }
 
-int multiplexer_int_enable(multiplexer_t *dev)
+int multiplexer_int_disable(multiplexer_t *dev)
 {
   if (dev->with_int < 0)
     return -1;
 
-  return gpio_irq_disable(multiplexer_t *dev);
+  gpio_irq_disable(dev->receive);
+  return 0;
 }
