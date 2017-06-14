@@ -4,6 +4,7 @@
 
 #include "periph/gpio.h"
 #include "periph/pwm.h"
+#include "xtimer.h"
 #include "shell.h"
 #include "retro11_conf.h"
 #include "dcmotor.h"
@@ -11,6 +12,11 @@
 
 dcmotor_t motor_a, motor_b;
 multiplexer_t multiplex;
+
+void int_print_button(void *arg)
+{
+  printf("Interrupt: address %d value %d\n", multiplex.curr_addr, gpio_read(multiplex.receive));
+}
 
 int set_speed_cmd(int argc, char **argv)
 {
@@ -37,8 +43,20 @@ int read_button_cmd(int argc, char **argv)
 
   // TODO: Safe atoi.
   int value = atoi(argv[1]);
-  printf("Adress %d", value);
-  printf(" : %d\n", multiplexer_receive(&multiplex, value));
+  int m_value = 0;
+  for(;;) {
+    m_value = multiplexer_receive(&multiplex, value);
+    printf("Adress %d", value);
+    printf(" : %d\n", m_value);
+
+    if (m_value == 1) {
+      dcmotor_set_speed(&motor_a, 200);
+    } else {
+      dcmotor_set_speed(&motor_b, 0);
+    }
+
+    xtimer_usleep(10000);
+  }
 
   return 0;
 }
@@ -74,8 +92,8 @@ int main(void)
 
     printf("Motor init done.\n");
 
-    if (multiplexer_init(&multiplex, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
-          CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C) < 0) {
+    if (multiplexer_init_int(&multiplex, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
+          CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_print_button, NULL) < 0) {
       puts("Erro initializing multiplexer");
       return 0;
     }

@@ -36,6 +36,8 @@ typedef struct {
   gpio_t addr_a;
   gpio_t addr_b;
   gpio_t addr_c;
+  int16_t curr_addr;
+  int with_int;
 } multiplexer_t;
 
 /**
@@ -53,6 +55,21 @@ typedef struct {
 int multiplexer_init(multiplexer_t *dev, gpio_t receive, gpio_t addr_a, gpio_t addr_b, gpio_t addr_c);
 
 /**
+ * @brief Initialize a multiplexer by assigning it multiple gpio pins with additional interrupt.
+ *
+ * @param[out] dev          struct describing the multiplexer
+ * @param[in] receive       gpio pin to receive value
+ * @param[in] addr_a         gpio pin to set address a
+ * @param[in] addr_b         gpio pin to set address b
+ * @param[in] addr_c         gpio pin to set address c
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
+int multiplexer_init_int(multiplexer_t *dev, gpio_t receive, gpio_t addr_a, gpio_t addr_b,
+    gpio_t addr_c, gpio_cb_t cb, void *arg);
+
+/**
  * @brief Receive value of the given address
  *
  * @param[in] dev           struct describing the multiplexer
@@ -62,6 +79,26 @@ int multiplexer_init(multiplexer_t *dev, gpio_t receive, gpio_t addr_a, gpio_t a
  * @return                  >0 on HIGH
  */
 int multiplexer_receive(multiplexer_t *dev, uint16_t addr);
+
+/**
+ * @brief Enable interrupt for gpio receive
+ *
+ * @param[in] dev           struct describing the multiplexer
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
+int multiplexer_int_enable(multiplexer_t *dev);
+
+/**
+ * @brief Disable interrupt for gpio receive
+ *
+ * @param[in] dev           struct describing the multiplexer
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
+int multiplexer_int_disable(multiplexer_t *dev);
 
 #ifdef __cplusplus
 }
