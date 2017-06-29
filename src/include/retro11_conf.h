@@ -19,8 +19,8 @@ extern "C" {
  * @{
  */
 #define CONF_MOTOR_A_PWM_CHAN     (0U)
-#define CONF_MOTOR_A_DIRA         GPIO_PIN(PA,22)
-#define CONF_MOTOR_A_DIRB         GPIO_PIN(PA,23)
+#define CONF_MOTOR_A_DIRA         GPIO_PIN(PA,13)
+#define CONF_MOTOR_A_DIRB         GPIO_PIN(PA,18)
 /** @} */
 
 /**
@@ -28,18 +28,18 @@ extern "C" {
  * @{
  */
 #define CONF_MOTOR_B_PWM_CHAN     (1U)
-#define CONF_MOTOR_B_DIRA         GPIO_PIN(PA,13)
-#define CONF_MOTOR_B_DIRB         GPIO_PIN(PA,28)
+#define CONF_MOTOR_B_DIRA         GPIO_PIN(PA,28)
+#define CONF_MOTOR_B_DIRB         GPIO_PIN(PA,19)
 /** @} */
 
 /**
  * @brief  Configuration for Multiplexer
  * @{
  */
-#define CONF_MULTIPLEXER_RECV     GPIO_PIN(PA,18)
-#define CONF_MULTIPLEXER_ADR_A    GPIO_PIN(PB,22)
-#define CONF_MULTIPLEXER_ADR_B    GPIO_PIN(PB,2)
-#define CONF_MULTIPLEXER_ADR_C    GPIO_PIN(PB,23)
+#define CONF_MULTIPLEXER_RECV     GPIO_PIN(PA,22)
+#define CONF_MULTIPLEXER_ADR_A    GPIO_PIN(PA,23)
+#define CONF_MULTIPLEXER_ADR_B    GPIO_PIN(PA,16)
+#define CONF_MULTIPLEXER_ADR_C    GPIO_PIN(PA,17)
 /** @} */
 
 #ifdef __cplusplus
