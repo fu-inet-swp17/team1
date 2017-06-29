@@ -192,7 +192,7 @@ static const spi_conf_t spi_config[] = {
  * @{
  */
 #define I2C_NUMOF          (1U)
-#define I2C_0_EN            1
+#define I2C_0_EN            0
 #define I2C_1_EN            0
 #define I2C_2_EN            0
 #define I2C_3_EN            0
