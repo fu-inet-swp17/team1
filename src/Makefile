@@ -19,6 +19,7 @@ QUIET ?= 1
 USEMODULE += xtimer
 USEMODULE += shell
 USEMODULE += shell_commands
+USEMODULE += random
 
 # include application specific include path
 INCLUDES += -I$(CURDIR)/include
