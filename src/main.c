@@ -5,17 +5,60 @@
 #include "periph/gpio.h"
 #include "periph/pwm.h"
 #include "xtimer.h"
+#include "thread.h"
 #include "shell.h"
+#include "random.h"
 #include "retro11_conf.h"
 #include "dcmotor.h"
 #include "multiplexer.h"
 
 dcmotor_t motor_a, motor_b;
-multiplexer_t multiplex;
+multiplexer_t multiplexer;
+kernel_pid_t mainPid, motorPid;
+bool enableBtns = false;
 
-void int_print_button(void *arg)
+char motor_ctrl_thread_stack[THREAD_STACKSIZE_MAIN];
+void *motor_ctrl_thread_handler(void *arg)
 {
-  printf("Interrupt: address %d value %d\n", multiplex.curr_addr, gpio_read(multiplex.receive));
+  (void) arg;
+  msg_t m;
+
+  while (1) {
+    msg_receive(&m);
+
+    switch(m.type) {
+      case 0:
+        printf("Setting speed to %ld.\n", m.content.value);
+        dcmotor_set_speed(&motor_a, m.content.value);
+        dcmotor_set_speed(&motor_b, m.content.value);
+        break;
+      default:
+        printf("Setting speed to %ld with timeout %dms.\n", m.content.value, m.type);
+        dcmotor_set_speed(&motor_a, m.content.value);
+        dcmotor_set_speed(&motor_b, m.content.value);
+
+        xtimer_usleep(m.type);
+
+        dcmotor_set_speed(&motor_a, 0);
+        dcmotor_set_speed(&motor_b, 0);
+        msg_send(&m, mainPid);
+        break;
+    }
+  }
+}
+
+void int_multiplexer_receive(void *arg)
+{
+  if (!enableBtns)
+    return;
+
+  msg_t msg;
+
+  printf("Interrupt: address %d value %d\n", multiplexer.curr_addr, 1);
+
+  msg.type = multiplexer.curr_addr;
+  msg.content.value = 1;
+  msg_send_int(&msg, mainPid);
 }
 
 int set_speed_cmd(int argc, char **argv)
@@ -43,27 +86,70 @@ int read_button_cmd(int argc, char **argv)
 
   // TODO: Safe atoi.
   int value = atoi(argv[1]);
-  int m_value = 0;
-  for(;;) {
-    m_value = multiplexer_receive(&multiplex, value);
-    printf("Adress %d", value);
-    printf(" : %d\n", m_value);
+  printf("Button %d Value %d\n", value, multiplexer_receive(&multiplexer, value));
 
-    if (m_value == 1) {
-      dcmotor_set_speed(&motor_a, 200);
-    } else {
-      dcmotor_set_speed(&motor_b, 0);
-    }
+  return 0;
+}
 
-    xtimer_usleep(10000);
+int start_reaction_game_cmd(int argc, char **argv)
+{
+  (void) argc;
+  (void) argv;
+
+  msg_t msg;
+  uint32_t start_time;
+  uint16_t motor_timeout;
+
+  /* Set Multiplexer to start button, enable interrupt */
+  multiplexer_receive(&multiplexer, 0);
+  multiplexer_int_enable(&multiplexer);
+  enableBtns = true;
+
+  puts("Waiting 10sec for player to press start button.");
+
+  /* Wait for 10 seconds */
+  if (xtimer_msg_receive_timeout(&msg, 10000000) == -1) {
+    puts("Timeout while waiting for start button.");
+    return 1;
   }
 
+  multiplexer_receive(&multiplexer, 0);
+  motor_timeout = (uint16_t) random_uint32_range(0, 65535);
+  msg.type = motor_timeout;
+  msg.content.value = 200;
+
+  printf("Starting game with timeout %dms.", motor_timeout);
+
+  msg_send(&msg, motorPid);
+
+
+  while (1) {
+    if (xtimer_msg_receive_timeout(&msg, motor_timeout + 10000000) == -1) {
+      puts("Something went wrong, the motor did not react.");
+      break;
+    }
+
+    printf("Received: Pid: %d Type: %d\n", msg.sender_pid, msg.type);
+
+    if (msg.sender_pid == motorPid) {
+      start_time = xtimer_now_usec();
+
+      if (xtimer_msg_receive_timeout(&msg, 100000000) == -1) {
+        puts("Player did not react in time.");
+        return 1;
+      }
+
+      printf("Player reacted in %ldms.\n", xtimer_now_usec() - start_time);
+      break;
+    }
+  }
   return 0;
 }
 
 static const shell_command_t shell_commands[] = {
     { "set_speed", "set speed for motor", set_speed_cmd },
     { "read_button", "read input of button", read_button_cmd },
+    { "start_reaction_game", "start reaction game mode", start_reaction_game_cmd },
     { NULL, NULL, NULL }
 };
 
@@ -90,15 +176,26 @@ int main(void)
       return 0;
     }
 
+    motorPid = thread_create(motor_ctrl_thread_stack, sizeof(motor_ctrl_thread_stack),
+        THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
+        motor_ctrl_thread_handler, NULL, "motor ctrl thread");
+
     printf("Motor init done.\n");
 
-    if (multiplexer_init_int(&multiplex, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
-          CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_print_button, NULL) < 0) {
+    if (multiplexer_init_int(&multiplexer, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
+          CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_multiplexer_receive, NULL) < 0) {
       puts("Erro initializing multiplexer");
       return 0;
     }
+    multiplexer_int_disable(&multiplexer);
 
     printf("Multiplexer is done.\n");
+
+    /* We do not have a battery, so its kind of always the same. :) */
+    random_init(xtimer_now_usec());
+
+    /* Save PID to enable messaging later on. */
+    mainPid = thread_getpid();
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);

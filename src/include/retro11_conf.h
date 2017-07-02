@@ -37,9 +37,9 @@ extern "C" {
  * @{
  */
 #define CONF_MULTIPLEXER_RECV     GPIO_PIN(PA,22)
-#define CONF_MULTIPLEXER_ADR_A    GPIO_PIN(PA,23)
+#define CONF_MULTIPLEXER_ADR_A    GPIO_PIN(PA,17)
 #define CONF_MULTIPLEXER_ADR_B    GPIO_PIN(PA,16)
-#define CONF_MULTIPLEXER_ADR_C    GPIO_PIN(PA,17)
+#define CONF_MULTIPLEXER_ADR_C    GPIO_PIN(PA,23)
 /** @} */
 
 #ifdef __cplusplus
