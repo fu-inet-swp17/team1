@@ -11,41 +11,13 @@
 #include "retro11_conf.h"
 #include "dcmotor.h"
 #include "multiplexer.h"
+#include "motor_controller.h"
 
 dcmotor_t motor_a, motor_b;
 multiplexer_t multiplexer;
-kernel_pid_t mainPid, motorPid;
+motor_controller_t motor_controller;
+kernel_pid_t mainPid;
 bool enableBtns = false;
-
-char motor_ctrl_thread_stack[THREAD_STACKSIZE_MAIN];
-void *motor_ctrl_thread_handler(void *arg)
-{
-  (void) arg;
-  msg_t m;
-
-  while (1) {
-    msg_receive(&m);
-
-    switch(m.type) {
-      case 0:
-        printf("Setting speed to %ld.\n", m.content.value);
-        dcmotor_set_speed(&motor_a, m.content.value);
-        dcmotor_set_speed(&motor_b, m.content.value);
-        break;
-      default:
-        printf("Setting speed to %ld with timeout %dms.\n", m.content.value, m.type);
-        dcmotor_set_speed(&motor_a, m.content.value);
-        dcmotor_set_speed(&motor_b, m.content.value);
-
-        xtimer_usleep(m.type);
-
-        dcmotor_set_speed(&motor_a, 0);
-        dcmotor_set_speed(&motor_b, 0);
-        msg_send(&m, mainPid);
-        break;
-    }
-  }
-}
 
 void int_multiplexer_receive(void *arg)
 {
@@ -71,8 +43,7 @@ int set_speed_cmd(int argc, char **argv)
   // TODO: Safe atoi.
   int value = atoi(argv[1]);
   printf("setting speed to %d.\n", value);
-  dcmotor_set_speed(&motor_a, value);
-  dcmotor_set_speed(&motor_b, value);
+  motor_controller_set_speed(&motor_controller, value, 0);
 
   return 0;
 }
@@ -97,12 +68,10 @@ int start_reaction_game_cmd(int argc, char **argv)
   (void) argv;
 
   msg_t msg;
-  uint32_t start_time;
-  uint16_t motor_timeout;
+  uint32_t start_time, motor_timeout;
 
   /* Set Multiplexer to start button, enable interrupt */
   multiplexer_receive(&multiplexer, 0);
-  multiplexer_int_enable(&multiplexer);
   enableBtns = true;
 
   puts("Waiting 10sec for player to press start button.");
@@ -113,15 +82,13 @@ int start_reaction_game_cmd(int argc, char **argv)
     return 1;
   }
 
+  motor_timeout = random_uint32_range(2000000, 20000000);
   multiplexer_receive(&multiplexer, 0);
-  motor_timeout = (uint16_t) random_uint32_range(0, 65535);
-  msg.type = motor_timeout;
-  msg.content.value = 200;
+  enableBtns = false;
 
-  printf("Starting game with timeout %dms.", motor_timeout);
+  printf("Starting game with timeout %ldms.", motor_timeout);
 
-  msg_send(&msg, motorPid);
-
+  motor_controller_set_speed(&motor_controller, 200, motor_timeout);
 
   while (1) {
     if (xtimer_msg_receive_timeout(&msg, motor_timeout + 10000000) == -1) {
@@ -129,9 +96,8 @@ int start_reaction_game_cmd(int argc, char **argv)
       break;
     }
 
-    printf("Received: Pid: %d Type: %d\n", msg.sender_pid, msg.type);
-
-    if (msg.sender_pid == motorPid) {
+    if (msg.sender_pid == motor_controller.ctrl_pid) {
+      enableBtns = true;
       start_time = xtimer_now_usec();
 
       if (xtimer_msg_receive_timeout(&msg, 100000000) == -1) {
@@ -176,9 +142,10 @@ int main(void)
       return 0;
     }
 
-    motorPid = thread_create(motor_ctrl_thread_stack, sizeof(motor_ctrl_thread_stack),
-        THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
-        motor_ctrl_thread_handler, NULL, "motor ctrl thread");
+    if(motor_controller_init(&motor_controller, &motor_a, &motor_b) < 0) {
+      puts("Error initializing motor controller");
+      return 0;
+    }
 
     printf("Motor init done.\n");
 
@@ -187,11 +154,12 @@ int main(void)
       puts("Erro initializing multiplexer");
       return 0;
     }
-    multiplexer_int_disable(&multiplexer);
+
+    enableBtns = false;
 
     printf("Multiplexer is done.\n");
 
-    /* We do not have a battery, so its kind of always the same. :) */
+    /* TODO: We do not have a battery, so its kind of always the same. :) */
     random_init(xtimer_now_usec());
 
     /* Save PID to enable messaging later on. */
