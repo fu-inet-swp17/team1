@@ -83,7 +83,7 @@ int start_reaction_game_cmd(int argc, char **argv)
   }
 
   motor_timeout = random_uint32_range(2000000, 20000000);
-  multiplexer_receive(&multiplexer, 0);
+  multiplexer_receive(&multiplexer, 1);
   enableBtns = false;
 
   printf("Starting game with timeout %ldms.", motor_timeout);
