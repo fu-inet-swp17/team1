@@ -1,1 +1,3 @@
 bin
+.clang
+compile*.json
