@@ -88,6 +88,8 @@ void neopixel_show(neopixel_t *dev)
   int irq_state;
   int i,j;
   color_rgb_t *pixel;
+  PortGroup * group = (PortGroup*)(dev->data_out & ~(0x1f));
+  int pin = (1 << (dev->data_out & (0x1f)));
 
   gpio_clear(dev->data_out);
   for(i = 0; i < dev->led_count; i++) {
@@ -105,11 +107,26 @@ void neopixel_show(neopixel_t *dev)
    */
   for (i = 0; i < dev->led_count; ++i) {
     pixel = &(dev->pixels[i]);
-    for (j = 0; j < 8; ++j) {
-      if ((pixel->g >> (7 - j) & 1) == 1) {
-        gpio_set(dev->data_out);
-        /* Wait 800ns */
+    for (j = 7; j > -1; --j) {
+      if ((pixel->g >> j & 1) == 1) {
+        group->OUTSET.reg = pin;
+        /* Wait for
+         * WS2811: 600ns +- 150ns
+         * */
         __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
@@ -124,19 +141,67 @@ void neopixel_show(neopixel_t *dev)
             "nop \n\t"
             );
 
-        gpio_clear(dev->data_out);
-        /* Wait 450ns */
+        group->OUTCLR.reg = pin;
+        /* Wait for
+         * WS2811: 650ns +- 150ns
+         * */
+        __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            );
       } else {
-        gpio_set(dev->data_out);
+        group->OUTSET.reg = pin;
         /* Wait 400ns */
+        __asm volatile(
+            "nop \n\t"
+            );
 
-        gpio_clear(dev->data_out);
+        group->OUTCLR.reg = pin;
         /* Wait 850ns */
+        __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            );
       }
     }
     for (j = 0; j < 8; ++j) {
-      if ((pixel->r >> (7 - j) & 1) == 1) {
-        gpio_set(dev->data_out);
+      if ((pixel->r >> j & 1) == 1) {
+        group->OUTSET.reg = pin;
         /* Wait 800ns */
         __asm volatile(
             "nop \n\t"
@@ -151,21 +216,80 @@ void neopixel_show(neopixel_t *dev)
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
             );
 
-        gpio_clear(dev->data_out);
+        group->OUTCLR.reg = pin;
         /* Wait 450ns */
+        __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            );
       } else {
-        gpio_set(dev->data_out);
+        group->OUTSET.reg = pin;
         /* Wait 400ns */
+        __asm volatile(
+            "nop \n\t"
+            );
 
-        gpio_clear(dev->data_out);
+        group->OUTCLR.reg = pin;
         /* Wait 850ns */
+        __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            );
       }
     }
     for (j = 0; j < 8; ++j) {
-      if ((pixel->b >> (7 - j) & 1) == 1) {
-        gpio_set(dev->data_out);
+      if ((pixel->b >> j & 1) == 1) {
+        group->OUTSET.reg = pin;
         /* Wait 800ns */
         __asm volatile(
             "nop \n\t"
@@ -180,16 +304,75 @@ void neopixel_show(neopixel_t *dev)
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
             );
 
-        gpio_clear(dev->data_out);
+        group->OUTCLR.reg = pin;
         /* Wait 450ns */
+        __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            );
       } else {
-        gpio_set(dev->data_out);
+        group->OUTSET.reg = pin;
         /* Wait 400ns */
+        __asm volatile(
+            "nop \n\t"
+            );
 
-        gpio_clear(dev->data_out);
+        group->OUTCLR.reg = pin;
         /* Wait 850ns */
+        __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            );
       }
     }
   }

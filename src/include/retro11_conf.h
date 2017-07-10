@@ -47,6 +47,7 @@ extern "C" {
  * @{
  */
 #define CONF_LED_STRIPE 	        GPIO_PIN(PB,3)
+#define CONF_LED_COUNT            1
 /** @} */
 
 #ifdef __cplusplus

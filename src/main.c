@@ -62,7 +62,7 @@ int set_led_cmd(int argc, char **argv){
   pixel.g =	atoi(argv[3]);
   pixel.b = atoi(argv[4]);
 
-  printf("r: 0x%x g: 0x%x, b: 0x%x for led %d/%ld\n", pixel.r, pixel.g, pixel.b, led, led_stripe.led_count);
+  printf("r: 0x%x g: 0x%x, b: 0x%x for led %d/%ld\n", pixel.r, pixel.g, pixel.b, led + 1, led_stripe.led_count);
   neopixel_set_pixel_color(&led_stripe, led, pixel);
 
   return 0;
@@ -225,7 +225,7 @@ int main(void)
 
     printf("Motor init done.\n");
 
-    if (neopixel_init(&led_stripe, 40, CONF_LED_STRIPE) < 0){
+    if (neopixel_init(&led_stripe, CONF_LED_COUNT, CONF_LED_STRIPE) < 0){
      puts("Error initializing led stripe");
       return 0;
     }
