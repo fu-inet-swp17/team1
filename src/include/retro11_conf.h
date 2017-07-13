@@ -50,6 +50,16 @@ extern "C" {
 #define CONF_LED_COUNT            1
 /** @} */
 
+/**
+ * @brief  Configuration for Display
+ * @{
+ */
+#define CONF_DISPLAY_SPI          (SPI_DEV(1)) /*  PB2, PB22, PB23 */
+#define CONF_DISPLAY_CS           GPIO_PIN(PA,15)
+#define CONF_DISPLAY_CMD          GPIO_PIN(PA,14)
+#define CONF_DISPLAY_RESET        GPIO_PIN(PA,8)
+/** @} */
+
 #ifdef __cplusplus
 }
 #endif

@@ -36,8 +36,10 @@ typedef struct {
   spi_t spi;
   spi_mode_t mode;
   spi_clk_t clk;
-  gpio_t chipselect;
+  gpio_t cs;
   gpio_t cmdselect;
+  gpio_t reset;
+  uint8_t ram[128][64];
 } lcd_spi_t;
 
 /**
@@ -54,7 +56,29 @@ typedef struct {
  * @return                  0 on success
  * @return                  <0 on error
  */
-int lcd_spi_init(lcd_spi_t *dev, spi_t spi, gpio_t cs, gpio_t cmdselect);
+int lcd_spi_init(lcd_spi_t *dev, spi_t spi, gpio_t cs, gpio_t cmdselect, gpio_t reset);
+
+void lcd_spi_set_contrast(lcd_spi_t *dev, uint8_t value);
+
+void lcd_spi_set_display_normal(lcd_spi_t *dev, bool value);
+
+void lcd_spi_reset(lcd_spi_t *dev);
+
+void lcd_spi_show(lcd_spi_t *dev);
+
+void lcd_clear(lcd_spi_t *dev);
+
+void lcd_spi_reset(lcd_spi_t *dev);
+
+/* Drawing Methods */
+
+int lcd_spi_set_pixel(lcd_spi_t *dev, uint8_t xpos, uint8_t ypos, uint8_t pixel);
+
+int lcd_spi_draw_line(lcd_spi_t *dev, uint8_t startXpos, uint8_t startYpos, uint8_t stopXpos, uint8_t stopYpos);
+
+int lcd_spi_draw_rect(lcd_spi_t *dev, uint8_t startXpos, uint8_t startYpos, uint8_t stopXpos, uint8_t stopYpos, bool fill);
+
+int lcd_spi_draw_circle(lcd_spi_t *dev, uint8_t x, uint8_t y, uint8_t r, bool fill);
 
 #ifdef __cplusplus
 }

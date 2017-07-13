@@ -14,10 +14,12 @@
 #include "motor_controller.h"
 #include "neopixel.h"
 #include "irq.h"
+#include "lcd_spi.h"
 
 dcmotor_t motor_a, motor_b;
 multiplexer_t multiplexer;
 motor_controller_t motor_controller;
+lcd_spi_t display;
 kernel_pid_t mainPid;
 neopixel_t led_stripe;
 bool enableBtns = false;
@@ -185,6 +187,11 @@ int start_reaction_game_cmd(int argc, char **argv)
   return 0;
 }
 
+int test_display_cmd(int argc, char **argv)
+{
+  return 0;
+}
+
 static const shell_command_t shell_commands[] = {
     { "set_speed", "set speed for motor", set_speed_cmd },
     { "read_button", "read input of button", read_button_cmd },
@@ -192,6 +199,7 @@ static const shell_command_t shell_commands[] = {
     { "set_led", "set led color", set_led_cmd },
     { "refresh_leds", "refresh all leds", refresh_leds_cmd },
     { "start_color_animation", "starts a sample color animation", start_color_animation_cmd },
+    { "test_display", "test display", test_display_cmd },
     { NULL, NULL, NULL }
 };
 
@@ -241,6 +249,15 @@ int main(void)
     enableBtns = false;
 
     printf("Multiplexer is done.\n");
+
+    puts("Start init display.");
+
+    if (lcd_spi_init(&display, CONF_DISPLAY_SPI, CONF_DISPLAY_CS, CONF_DISPLAY_CMD, CONF_DISPLAY_RESET) < 0) {
+      puts("Error initializing display.");
+      return 0;
+    }
+
+    printf("Display is done.\n");
 
     /* TODO: We do not have a battery, so its kind of always the same. :) */
     random_init(xtimer_now_usec());
