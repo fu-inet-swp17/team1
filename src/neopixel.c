@@ -133,12 +133,6 @@ void neopixel_show(neopixel_t *dev)
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
             );
 
         group->OUTCLR.reg = pin;
@@ -146,6 +140,11 @@ void neopixel_show(neopixel_t *dev)
          * WS2811: 650ns +- 150ns
          * */
         __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
@@ -164,8 +163,6 @@ void neopixel_show(neopixel_t *dev)
         group->OUTCLR.reg = pin;
         /* Wait 850ns */
         __asm volatile(
-            "nop \n\t"
-            "nop \n\t"
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
@@ -223,17 +220,16 @@ void neopixel_show(neopixel_t *dev)
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
             );
 
         group->OUTCLR.reg = pin;
         /* Wait 450ns */
         __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
@@ -252,8 +248,6 @@ void neopixel_show(neopixel_t *dev)
         group->OUTCLR.reg = pin;
         /* Wait 850ns */
         __asm volatile(
-            "nop \n\t"
-            "nop \n\t"
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
@@ -311,17 +305,16 @@ void neopixel_show(neopixel_t *dev)
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
-            "nop \n\t"
             );
 
         group->OUTCLR.reg = pin;
         /* Wait 450ns */
         __asm volatile(
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
+            "nop \n\t"
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
@@ -340,8 +333,6 @@ void neopixel_show(neopixel_t *dev)
         group->OUTCLR.reg = pin;
         /* Wait 850ns */
         __asm volatile(
-            "nop \n\t"
-            "nop \n\t"
             "nop \n\t"
             "nop \n\t"
             "nop \n\t"
