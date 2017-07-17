@@ -37,7 +37,7 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu) {
             /* Expecting diagnostic payload in failure cases */
             printf(", %u bytes\nResponse from Server: %.*s\n", pdu->payload_len, pdu->payload_len, (char *)pdu->payload);
 
-            char machine[3];
+            char machine[4];
             int pldlen = pdu->payload_len-3;
             char pld[pldlen];
             
@@ -48,17 +48,16 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu) {
             pld [pldlen] = '\0';
 
             int m;
-            if (strcmp(pld, "M0.")) {
+            if (strcmp(machine, "M0.") == 0) {
                 m = 0;
             }
-            else if (strcmp(pld, "M1.")) {
-                m = 1;
+            else if (strcmp(machine, "M1.") == 0) {
+                    m = 1;
             }
             else {
-                printf("%s\n",(char *)pdu->payload);
+                printf("%.*s\n", pdu->payload_len, (char *)pdu->payload);
                 return;
             }
-
             if (strncmp(pld, "in", 2) == 0) {
                 set_is_init(m);
             }

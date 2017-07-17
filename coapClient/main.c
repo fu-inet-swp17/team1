@@ -13,7 +13,7 @@ char stack[THREAD_STACKSIZE_MAIN];
 
 extern int gcoap_cli_cmd(int argc, char **argv);
 
-static char M0_ADDR[] = "fe80::b052:e1ff:fe3f:c8eb";
+static char M0_ADDR[] = "fe80::18b4:b2ff:fefb:7a4d";
 //static char M1_ADDR[] = "fe80::44e8:fbff:fea3:bfcb";
 
 static int M0_init = 0;
@@ -92,36 +92,47 @@ void *thread_handler(void *arg) {
                 xtimer_sleep(20);
             }
             else {
-                if (M0_is_working == 1 && M0_rcvd_result == 0) {
-                    char * message[] = {"coap", "get", M0_ADDR, "5683", "/request/result"};
+                if (M0_is_working == 0) {
+                    char * message[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
                     gcoap_cli_cmd(5, message);
                     xtimer_sleep(5);
                 }
                 else {
-                    /*if (toFloat(M0_result) < toFloat(M1_result)) {
-                        //send winner to M1 and looser to M2
-                        //send result to Database
-                    }
-                    else if (toFloat(M0_result) > toFloat(M1_result)) {
-                        //send winner to M1 and looser to M2
-                        //send result to Database
+                    if (M0_rcvd_result == 0) {
+                        char * message[] = {"coap", "get", M0_ADDR, "5683", "/request/result"};
+                        gcoap_cli_cmd(5, message);
+                        xtimer_sleep(5);
                     }
                     else {
-                        //send draw to both
-                        //send result to database
-                    }*/
-                    M0_init = 0;
-                    M1_init = 0;
-                    M0_name = "";
-                    M1_name = "";
-                    M0_has_name = 0;
-                    M1_has_name = 0; 
-                    M0_is_working = 0;
-                    M1_is_working = 0;
-                    M0_result = "";
-                    M1_result = "";
-                    M0_rcvd_result = 0;
-                    M1_rcvd_result = 0;
+                        /*if (toFloat(M0_result) < toFloat(M1_result)) {
+                            //send winner to M1 and looser to M2
+                            //send result to Database
+                        }
+                        else if (toFloat(M0_result) > toFloat(M1_result)) {
+                            //send winner to M1 and looser to M2
+                            //send result to Database
+                        }
+                        else {
+                            //send draw to both
+                            //send result to database
+                        }*/
+
+                        puts("Resetting machine status");
+                        
+                        M0_init = 0;
+                        M1_init = 0;
+                        M0_name = "";
+                        M1_name = "";
+                        M0_has_name = 0;
+                        M1_has_name = 0; 
+                        M0_is_working = 0;
+                        M1_is_working = 0;
+                        M0_result = "";
+                        M1_result = "";
+                        M0_rcvd_result = 0;
+                        M1_rcvd_result = 0;
+                        xtimer_sleep(5);
+                    }    
                 }
             }
         }
