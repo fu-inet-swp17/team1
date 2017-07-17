@@ -5,25 +5,40 @@
 
 void microcoap_server_loop(void);
 
-//char * get_name_of_player(void);
-//void start_game(void);
-
 /* import "ifconfig" shell command, used for printing addresses */
 extern int _netif_config(int argc, char **argv);
 
-char * get_name_of_player(void)
-{
+char * get_name_of_player(void) {
     puts("Please insert name");
-    return("name");
+    //if error with name
+        //request other name
+    //else
+    return("M0.na.Musterino");
 }
 
-void start_game(void)
-{
-    puts("Starting game");
+char * start_game(void) {
+    //if start successful
+    return("M0.st");
+    //else 
+        //try to start game again
 }
 
-int start_server(int argc, char **argv)
-{
+char * is_initalized(void) {
+    //if initalized
+        puts("is initalized?");
+        //return("M0.in");
+    //else
+        return("not initalized");
+}
+
+char * get_result(void) {
+    //if has result
+    return("M0.re.0.123456");
+    //else return
+        //return("still playing")
+}
+
+int start_server(int argc, char **argv) {
     (void)argv;
     (void)argc;
 
