@@ -18,7 +18,7 @@ char * get_name_of_player(void) {
 
 char * start_game(void) {
     //if start successful
-    return("M0.st");
+        return("M0.st");
     //else 
         //try to start game again
 }
@@ -26,14 +26,14 @@ char * start_game(void) {
 char * is_initalized(void) {
     //if initalized
         puts("is initalized?");
-        //return("M0.in");
+        return("M0.in");
     //else
-        return("not initalized");
+        //return("not initalized");
 }
 
 char * get_result(void) {
     //if has result
-    return("M0.re.0.123456");
+        return("M0.re.0.123456");
     //else return
         //return("still playing")
 }
