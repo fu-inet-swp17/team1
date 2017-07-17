@@ -58,7 +58,7 @@ extern "C" {
 #define CONF_DISPLAY_CS           GPIO_PIN(PA,15)
 #define CONF_DISPLAY_CMD          GPIO_PIN(PA,14)
 #define CONF_DISPLAY_RESET        GPIO_PIN(PA,8)
-#define CONF_DISPLAY_BRIGHTNESS   (125U)
+#define CONF_DISPLAY_BRIGHTNESS   (50U)
 /** @} */
 
 #ifdef __cplusplus

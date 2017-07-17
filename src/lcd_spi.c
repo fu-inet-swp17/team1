@@ -22,6 +22,7 @@
 #include "lcd_spi.h"
 #include "periph/gpio.h"
 #include "xtimer.h"
+#include "font_5x7_col.h"
 
 #define ENABLE_DEBUG    (0)
 #include "debug.h"
@@ -350,3 +351,27 @@ int lcd_spi_draw_circle(lcd_spi_t *dev, uint8_t x, uint8_t y, uint8_t radius, bo
    return 0;
 }
 
+int lcd_spi_draw_c(lcd_spi_t *dev, uint8_t x, uint8_t y, char c)
+{
+  const uint8_t *character = font_5x7_col_char(c);
+  uint8_t color;
+
+  /* For every col */
+  for (int i = 0; i < 5; ++i) {
+    /* For every row */
+    for (int j = 0; j < 8; ++j) {
+      color = (character[i] >> j) & 1;
+      lcd_spi_set_pixel(dev, x - i, y - j, color);
+    }
+  }
+
+  return 0;
+}
+
+int lcd_spi_draw_s(lcd_spi_t *dev, uint8_t x, uint8_t y, char *c, uint8_t n)
+{
+  for (int i = 0; i < 7; ++i)
+    lcd_spi_draw_c(dev, x - (i * 6), y, c[i]);
+
+  return 0;
+}

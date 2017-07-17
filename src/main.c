@@ -316,12 +316,14 @@ int main(void)
     }
 
     lcd_spi_set_contrast(&display, 25);
-    for (int i = 0; i < 128; i++) {
-      lcd_spi_set_pixel(&display, i, 0, 1);
-      lcd_spi_set_pixel(&display, i, 1, 1);
-      lcd_spi_set_pixel(&display, i, 63, 1);
-      lcd_spi_set_pixel(&display, i, 62, 1);
-    }
+    /* Draw top and  bottom borders */
+    lcd_spi_draw_line(&display, 0, 0, 127, 0);
+    lcd_spi_draw_line(&display, 0, 1, 127, 1);
+    lcd_spi_draw_line(&display, 0, 63, 127, 63);
+    lcd_spi_draw_line(&display, 0, 62, 127, 62);
+
+    lcd_spi_draw_s(&display, 80, 40, "Retro11", 7);
+
     lcd_spi_show(&display);
 
     printf("Display is done.\n");

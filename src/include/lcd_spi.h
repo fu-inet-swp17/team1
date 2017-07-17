@@ -80,6 +80,10 @@ int lcd_spi_draw_rect(lcd_spi_t *dev, uint8_t startXpos, uint8_t startYpos, uint
 
 int lcd_spi_draw_circle(lcd_spi_t *dev, uint8_t x, uint8_t y, uint8_t r, bool fill);
 
+int lcd_spi_draw_c(lcd_spi_t *dev, uint8_t x, uint8_t y, char c);
+
+int lcd_spi_draw_s(lcd_spi_t *dev, uint8_t x, uint8_t y, char *c, uint8_t n);
+
 #ifdef __cplusplus
 }
 #endif
