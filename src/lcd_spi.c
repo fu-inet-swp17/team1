@@ -63,7 +63,7 @@ void set_page_address(lcd_spi_t *dev, uint8_t page, uint8_t colhi, uint8_t collo
 {
   uint8_t cmd;
 
-  gpio_set(dev->cmdselect);
+  gpio_clear(dev->cmdselect);
   spi_acquire(dev->spi, dev->cs, dev->mode, dev->clk);
 
   cmd = CMDSETPAGEADR + page;
@@ -74,7 +74,7 @@ void set_page_address(lcd_spi_t *dev, uint8_t page, uint8_t colhi, uint8_t collo
   spi_transfer_byte(dev->spi, dev->cs, true, cmd);
 
   spi_release(dev->spi);
-  gpio_clear(dev->cmdselect);
+  gpio_set(dev->cmdselect);
 }
 
 bool position_on_screen(uint8_t xpos, uint8_t ypos)

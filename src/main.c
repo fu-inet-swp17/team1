@@ -187,25 +187,75 @@ int start_reaction_game_cmd(int argc, char **argv)
   return 0;
 }
 
-int test_display_cmd(int argc, char **argv)
+int display_set_contrast_cmd(int argc, char **argv)
 {
+  int value;
+
+  if (argc < 2)
+    return 1;
+
+  value = atoi(argv[1]);
+  lcd_spi_set_contrast(&display, value);
+
+  return 0;
+}
+
+int display_set_direction_cmd(int argc, char **argv)
+{
+  bool normal;
+
+  if (argc < 2)
+    return 1;
+
+  if (atoi(argv[1]) == 0)
+    normal = false;
+  else
+    normal = true;
+
+  lcd_spi_set_display_normal(&display, normal);
+
+  return 0;
+}
+
+int display_init_cmd(int argc, char **argv)
+{
+  if (lcd_spi_init(&display, CONF_DISPLAY_SPI, CONF_DISPLAY_CS, CONF_DISPLAY_CMD, CONF_DISPLAY_RESET) < 0) {
+    puts("Error initializing display.");
+    return 0;
+  }
+
+  puts("setting pixels.");
+  for (int i = 0; i < 50; i++) {
+    lcd_spi_set_pixel(&display, 50, i, 1);
+  }
+  lcd_spi_show(&display);
+  puts("done.");
+
   return 0;
 }
 
 static const shell_command_t shell_commands[] = {
+    /* Motor Commands */
     { "set_speed", "set speed for motor", set_speed_cmd },
+    /* Multiplexer Commands */
     { "read_button", "read input of button", read_button_cmd },
+    /* Game Commands */
     { "start_reaction_game", "start reaction game mode", start_reaction_game_cmd },
+    /* LED Commands */
     { "set_led", "set led color", set_led_cmd },
     { "refresh_leds", "refresh all leds", refresh_leds_cmd },
     { "start_color_animation", "starts a sample color animation", start_color_animation_cmd },
-    { "test_display", "test display", test_display_cmd },
+    /* Display Commands */
+    { "display_set_contrast", "set contrast of display", display_set_contrast_cmd },
+    { "display_set_direction", "set direction of display", display_set_direction_cmd },
+    { "display_init", "init display", display_init_cmd },
     { NULL, NULL, NULL }
 };
 
 int main(void)
 {
     int32_t act_freq;
+    color_rgb_t curr;
     printf("Welcome to Retro11.");
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
@@ -240,6 +290,14 @@ int main(void)
 
     printf("Neopixel init done.\n");
 
+    curr.r = CONF_DISPLAY_BRIGHTNESS;
+    curr.g = CONF_DISPLAY_BRIGHTNESS;
+    curr.b = CONF_DISPLAY_BRIGHTNESS;
+
+    neopixel_set_pixel_color(&led_stripe, 0, curr);
+    neopixel_set_pixel_color(&led_stripe, 1, curr);
+    neopixel_show(&led_stripe);
+
     if (multiplexer_init_int(&multiplexer, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
           CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_multiplexer_receive, NULL) < 0) {
       puts("Erro initializing multiplexer");
@@ -256,6 +314,15 @@ int main(void)
       puts("Error initializing display.");
       return 0;
     }
+
+    lcd_spi_set_contrast(&display, 25);
+    for (int i = 0; i < 128; i++) {
+      lcd_spi_set_pixel(&display, i, 0, 1);
+      lcd_spi_set_pixel(&display, i, 1, 1);
+      lcd_spi_set_pixel(&display, i, 63, 1);
+      lcd_spi_set_pixel(&display, i, 62, 1);
+    }
+    lcd_spi_show(&display);
 
     printf("Display is done.\n");
 
