@@ -47,7 +47,7 @@ extern "C" {
  * @{
  */
 #define CONF_LED_STRIPE 	        GPIO_PIN(PB,3)
-#define CONF_LED_COUNT            2
+#define CONF_LED_COUNT            57
 /** @} */
 
 /**
@@ -59,6 +59,8 @@ extern "C" {
 #define CONF_DISPLAY_CMD          GPIO_PIN(PA,14)
 #define CONF_DISPLAY_RESET        GPIO_PIN(PA,8)
 #define CONF_DISPLAY_BRIGHTNESS   (50U)
+#define CONF_DISPLAY_LED1         (56)
+#define CONF_DISPLAY_LED2         (55)
 /** @} */
 
 #ifdef __cplusplus

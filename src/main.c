@@ -255,7 +255,7 @@ static const shell_command_t shell_commands[] = {
 int main(void)
 {
     int32_t act_freq;
-    color_rgb_t curr;
+    color_rgb_t curr_color;
     printf("Welcome to Retro11.");
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
@@ -290,14 +290,6 @@ int main(void)
 
     printf("Neopixel init done.\n");
 
-    curr.r = CONF_DISPLAY_BRIGHTNESS;
-    curr.g = CONF_DISPLAY_BRIGHTNESS;
-    curr.b = CONF_DISPLAY_BRIGHTNESS;
-
-    neopixel_set_pixel_color(&led_stripe, 0, curr);
-    neopixel_set_pixel_color(&led_stripe, 1, curr);
-    neopixel_show(&led_stripe);
-
     if (multiplexer_init_int(&multiplexer, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
           CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_multiplexer_receive, NULL) < 0) {
       puts("Erro initializing multiplexer");
@@ -315,7 +307,15 @@ int main(void)
       return 0;
     }
 
+    curr_color.r = CONF_DISPLAY_BRIGHTNESS;
+    curr_color.g = CONF_DISPLAY_BRIGHTNESS;
+    curr_color.b = CONF_DISPLAY_BRIGHTNESS;
+    neopixel_set_pixel_color(&led_stripe, CONF_DISPLAY_LED1, curr_color);
+    neopixel_set_pixel_color(&led_stripe, CONF_DISPLAY_LED2, curr_color);
+    neopixel_show(&led_stripe);
+
     lcd_spi_set_contrast(&display, 25);
+    lcd_spi_set_display_normal(&display, false);
     /* Draw top and  bottom borders */
     lcd_spi_draw_line(&display, 0, 0, 127, 0);
     lcd_spi_draw_line(&display, 0, 1, 127, 1);
