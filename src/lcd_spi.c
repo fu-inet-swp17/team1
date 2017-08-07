@@ -224,7 +224,7 @@ void lcd_spi_invert(lcd_spi_t *dev)
   }
 }
 
-void lcd_clear(lcd_spi_t *dev)
+void lcd_spi_clear(lcd_spi_t *dev)
 {
   for(int x = 0; x < 128; ++x) {
     for(int y = 0; y < 64; ++y) {
@@ -368,7 +368,7 @@ int lcd_spi_draw_c(lcd_spi_t *dev, uint8_t x, uint8_t y, char c)
   return 0;
 }
 
-int lcd_spi_draw_s(lcd_spi_t *dev, uint8_t x, uint8_t y, char *c, uint8_t n)
+int lcd_spi_draw_s(lcd_spi_t *dev, uint8_t x, uint8_t y, const char *c, uint8_t n)
 {
   for (int i = 0; i < 7; ++i)
     lcd_spi_draw_c(dev, x - (i * 6), y, c[i]);

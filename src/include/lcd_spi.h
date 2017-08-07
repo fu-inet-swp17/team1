@@ -66,7 +66,7 @@ void lcd_spi_reset(lcd_spi_t *dev);
 
 void lcd_spi_show(lcd_spi_t *dev);
 
-void lcd_clear(lcd_spi_t *dev);
+void lcd_spi_clear(lcd_spi_t *dev);
 
 void lcd_spi_reset(lcd_spi_t *dev);
 
@@ -82,7 +82,7 @@ int lcd_spi_draw_circle(lcd_spi_t *dev, uint8_t x, uint8_t y, uint8_t r, bool fi
 
 int lcd_spi_draw_c(lcd_spi_t *dev, uint8_t x, uint8_t y, char c);
 
-int lcd_spi_draw_s(lcd_spi_t *dev, uint8_t x, uint8_t y, char *c, uint8_t n);
+int lcd_spi_draw_s(lcd_spi_t *dev, uint8_t x, uint8_t y, const char *c, uint8_t n);
 
 #ifdef __cplusplus
 }
