@@ -6,7 +6,6 @@
 #include "periph/pwm.h"
 #include "xtimer.h"
 #include "thread.h"
-#include "shell.h"
 #include "random.h"
 #include "retro11_conf.h"
 #include "dcmotor.h"
@@ -15,6 +14,7 @@
 #include "neopixel.h"
 #include "irq.h"
 #include "lcd_spi.h"
+#include "menu.h"
 
 dcmotor_t motor_a, motor_b;
 multiplexer_t multiplexer;
@@ -22,6 +22,7 @@ motor_controller_t motor_controller;
 lcd_spi_t display;
 kernel_pid_t mainPid;
 neopixel_t led_stripe;
+menu_t menu;
 bool enableBtns = false;
 
 void int_multiplexer_receive(void *arg)
@@ -36,105 +37,6 @@ void int_multiplexer_receive(void *arg)
   msg.type = multiplexer.curr_addr;
   msg.content.value = 1;
   msg_send_int(&msg, mainPid);
-}
-
-int refresh_leds_cmd(int argc, char **argv)
-{
-  neopixel_show(&led_stripe);
-  return 0;
-}
-
-int set_led_cmd(int argc, char **argv){
-  if(argc < 5) {
-    puts("usage: set_led [led number] [red green blue]");
-    return 1;
-  }
-
-  int led = atoi(argv[1]);
-  color_rgb_t pixel;
-
-  if(led > led_stripe.led_count){
-    printf("invalid led number %d, smaller then led count %ld\n", led, led_stripe.led_count);
-    puts("usage: set_led [led number] [red] [green] [blue]\n");
-    return 1;
-  }
-
-  /* NOTE: If it overflows the user has to be more careful. */
-  pixel.r =	atoi(argv[2]);
-  pixel.g =	atoi(argv[3]);
-  pixel.b = atoi(argv[4]);
-
-  printf("r: 0x%x g: 0x%x, b: 0x%x for led %d/%ld\n", pixel.r, pixel.g, pixel.b, led + 1, led_stripe.led_count);
-  neopixel_set_pixel_color(&led_stripe, led, pixel);
-
-  return 0;
-}
-
-int start_color_animation_cmd(int argc, char **argv)
-{
-  if (argc < 2) {
-    printf("start_color_animation: start_color_animation [rate]\n");
-    return 0;
-  }
-
-  int rate = atoi(argv[1]);
-
-  for(int k = 0; k < led_stripe.led_count; ++k) {
-    uint8_t *curr = &(led_stripe.pixels[k].r);
-    *(curr + (k % 3)) = 255;
-  }
-  neopixel_show(&led_stripe);
-
-  for (int i = 0;;++i) {
-
-    color_rgb_t curr;
-    for (int k = 0; k < led_stripe.led_count; ++k) {
-      int next = (k + 1) % led_stripe.led_count;
-      curr.r = led_stripe.pixels[next].r;
-      curr.g = led_stripe.pixels[next].g;
-      curr.b = led_stripe.pixels[next].b;
-      led_stripe.pixels[next].r = led_stripe.pixels[k].r;
-      led_stripe.pixels[next].g = led_stripe.pixels[k].g;
-      led_stripe.pixels[next].b = led_stripe.pixels[k].b;
-      led_stripe.pixels[k].r = curr.r;
-      led_stripe.pixels[k].g = curr.g;
-      led_stripe.pixels[k].b = curr.b;
-    }
-
-    xtimer_usleep(rate);
-    neopixel_show(&led_stripe);
-  }
-
-  return 0;
-}
-
-int set_speed_cmd(int argc, char **argv)
-{
-  if (argc < 2) {
-    puts("usage: set_speed [speed]");
-    return 0;
-  }
-
-  // TODO: Safe atoi.
-  int value = atoi(argv[1]);
-  printf("setting speed to %d.\n", value);
-  motor_controller_set_speed(&motor_controller, value, 0);
-
-  return 0;
-}
-
-int read_button_cmd(int argc, char **argv)
-{
-  if (argc < 2) {
-    puts("usage: read_button [address]");
-    return 0;
-  }
-
-  // TODO: Safe atoi.
-  int value = atoi(argv[1]);
-  printf("Button %d Value %d\n", value, multiplexer_receive(&multiplexer, value));
-
-  return 0;
 }
 
 int start_reaction_game_cmd(int argc, char **argv)
@@ -187,69 +89,35 @@ int start_reaction_game_cmd(int argc, char **argv)
   return 0;
 }
 
-int display_set_contrast_cmd(int argc, char **argv)
+int start_game_cmd(void)
 {
-  int value;
+  /* Announce to server */
 
-  if (argc < 2)
-    return 1;
+  /* Wait for player to join */
 
-  value = atoi(argv[1]);
-  lcd_spi_set_contrast(&display, value);
+  /* Start game */
+
+  /* Input name if winner for highscore */
+
+  /* Send to server */
+
 
   return 0;
 }
 
-int display_set_direction_cmd(int argc, char **argv)
+int highscore_cmd(void)
 {
-  bool normal;
+  /* Get list of names from server */
 
-  if (argc < 2)
-    return 1;
-
-  if (atoi(argv[1]) == 0)
-    normal = false;
-  else
-    normal = true;
-
-  lcd_spi_set_display_normal(&display, normal);
+  /* Print list on LCD */
 
   return 0;
 }
 
-int display_init_cmd(int argc, char **argv)
-{
-  if (lcd_spi_init(&display, CONF_DISPLAY_SPI, CONF_DISPLAY_CS, CONF_DISPLAY_CMD, CONF_DISPLAY_RESET) < 0) {
-    puts("Error initializing display.");
-    return 0;
-  }
-
-  puts("setting pixels.");
-  for (int i = 0; i < 50; i++) {
-    lcd_spi_set_pixel(&display, 50, i, 1);
-  }
-  lcd_spi_show(&display);
-  puts("done.");
-
-  return 0;
-}
-
-static const shell_command_t shell_commands[] = {
-    /* Motor Commands */
-    { "set_speed", "set speed for motor", set_speed_cmd },
-    /* Multiplexer Commands */
-    { "read_button", "read input of button", read_button_cmd },
-    /* Game Commands */
-    { "start_reaction_game", "start reaction game mode", start_reaction_game_cmd },
-    /* LED Commands */
-    { "set_led", "set led color", set_led_cmd },
-    { "refresh_leds", "refresh all leds", refresh_leds_cmd },
-    { "start_color_animation", "starts a sample color animation", start_color_animation_cmd },
-    /* Display Commands */
-    { "display_set_contrast", "set contrast of display", display_set_contrast_cmd },
-    { "display_set_direction", "set direction of display", display_set_direction_cmd },
-    { "display_init", "init display", display_init_cmd },
-    { NULL, NULL, NULL }
+static const menu_command_t menu_commands[] = {
+  {"START GAME", "start game", start_game_cmd},
+  {"HIGHSCORE", "highscore", highscore_cmd},
+  {NULL, NULL, NULL}
 };
 
 int main(void)
@@ -292,7 +160,7 @@ int main(void)
 
     if (multiplexer_init_int(&multiplexer, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
           CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_multiplexer_receive, NULL) < 0) {
-      puts("Erro initializing multiplexer");
+      puts("Error initializing multiplexer");
       return 0;
     }
 
@@ -328,16 +196,14 @@ int main(void)
 
     printf("Display is done.\n");
 
-    /* TODO: We do not have a battery, so its kind of always the same. :) */
+    /* TODO: We do not have a battery, so its always the same. :) */
     random_init(xtimer_now_usec());
 
     /* Save PID to enable messaging later on. */
     mainPid = thread_getpid();
 
-    char line_buf[SHELL_DEFAULT_BUFSIZE];
-    shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
-
-    neopixel_free(&led_stripe);
+    menu_init(&menu, &multiplexer, &display, &led_stripe, &motor_controller, menu_commands, 2);
+    menu_run(&menu);
 
     return 0;
 }
