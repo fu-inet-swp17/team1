@@ -6,7 +6,8 @@
 #include "od.h"
 #include "fmt.h"
 
-static void _resp_handler(unsigned req_state, coap_pkt_t* pdu);
+static void _resp_handler(unsigned req_state, coap_pkt_t* pdu,
+                          sock_udp_ep_t *remote);
 
 extern void set_is_init(int);
 extern void set_name(char * name, int);
@@ -16,7 +17,11 @@ extern void set_result(char * result, int);
 /*
  * Response callback.
  */
-static void _resp_handler(unsigned req_state, coap_pkt_t* pdu) {
+static void _resp_handler(unsigned req_state, coap_pkt_t* pdu,
+                          sock_udp_ep_t *remote) {
+
+    (void)remote;       /* not interested in the source currently */
+    
     if (req_state == GCOAP_MEMO_TIMEOUT) {
         printf("gcoap: timeout for msg ID %02u\n", coap_get_id(pdu));
         return;
@@ -126,7 +131,7 @@ int gcoap_cli_cmd(int argc, char **argv) {
     for (size_t i = 0; i < sizeof(method_codes) / sizeof(char*); i++) {
         if (strcmp(argv[1], method_codes[i]) == 0) {            
             len = gcoap_request(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, i+1, argv[4]);                
-            printf("gcoap_cli: sending msg ID %u, %u bytes\n", coap_get_id(&pdu), (unsigned) len);
+            printf("gcoap_cli: sending msg ID %u, %u bytes\nRequested ressource: %s\n", coap_get_id(&pdu), (unsigned) len, argv[4]);
             if (!_send(&buf[0], len, argv[2], argv[3])) {
                 puts("gcoap_cli: msg send failed");
             }

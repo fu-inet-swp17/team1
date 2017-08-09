@@ -2,6 +2,19 @@
 #include "msg.h"
 #include "xtimer.h"
 #include "shell.h"
+#include "net/fib.h"
+#include "net/gnrc/ipv6.h"
+#include "net/gnrc/ipv6/nc.h"
+#include "net/gnrc/ipv6/netif.h"
+#include "net/gnrc/netapi.h"
+#include "net/gnrc/netif.h"
+#include "net/ipv6/addr.h"
+#include "net/netdev.h"
+#include "net/netopt.h"
+
+#define MAIN_QUEUE_SIZE     (8)
+static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
+
 
 void microcoap_server_loop(void);
 
@@ -63,8 +76,25 @@ int main(void)
     puts("Configured network interfaces:");
     _netif_config(0, NULL);
 
+    msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
+
+    kernel_pid_t dev;
+    kernel_pid_t ifs[GNRC_NETIF_NUMOF];
+    size_t numof = gnrc_netif_get(ifs);
+
+    
+        dev = ifs[numof-1];
+
+    ipv6_addr_t addr;
+    ipv6_addr_from_str(&addr, "2001:db8::1:1:1");
+    gnrc_ipv6_netif_add_addr    ( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_NON_UNICAST );   
+
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+
+    /* start coap server loop */
+    //puts("Starting microcoap server");
+    //microcoap_server_loop();
 
     /* should be never reached */
     return 0;

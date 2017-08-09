@@ -13,7 +13,7 @@ char stack[THREAD_STACKSIZE_MAIN];
 
 extern int gcoap_cli_cmd(int argc, char **argv);
 
-static char M0_ADDR[] = "fe80::18b4:b2ff:fefb:7a4d";
+static char M0_ADDR[] = "2001:db8::1:1:1";
 //static char M1_ADDR[] = "fe80::44e8:fbff:fea3:bfcb";
 
 static int M0_init = 0;
@@ -44,12 +44,12 @@ void set_name(char * name, int m) {
     if (m == 0){
         M0_name = name;
         M0_has_name = 1;
-        printf("M0 Name: %s", name);
+        printf("M0 Name: %s\n", name);
     }
     else {
         M1_name = name;
         M1_has_name = 1;
-        printf("M1 Name: %s", name);
+        printf("M1 Name: %s\n", name);
     }
 }
 
@@ -117,7 +117,7 @@ void *thread_handler(void *arg) {
                             //send result to database
                         }*/
 
-                        puts("Resetting machine status");
+                        printf("\n\nResetting machine status\n\n\n");
                         
                         M0_init = 0;
                         M1_init = 0;
@@ -165,6 +165,7 @@ int main(void) {
     puts("All up, running the shell now");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+    //thread_create(stack, sizeof(stack), THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST, thread_handler, NULL, "main_thread");
 
     return 0;
 }
