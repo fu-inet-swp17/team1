@@ -16,6 +16,22 @@
 #include "lcd_spi.h"
 #include "menu.h"
 
+//coap Server 
+#include "msg.h"
+#include "shell.h"
+#include "net/fib.h"
+#include "net/gnrc/ipv6.h"
+#include "net/gnrc/ipv6/nc.h"
+#include "net/gnrc/ipv6/netif.h"
+#include "net/gnrc/netapi.h"
+#include "net/gnrc/netif.h"
+#include "net/ipv6/addr.h"
+#include "net/netdev.h"
+#include "net/netopt.h"
+
+#define MAIN_QUEUE_SIZE     (8)
+static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
+
 dcmotor_t motor_a, motor_b;
 multiplexer_t multiplexer;
 motor_controller_t motor_controller;
@@ -24,6 +40,39 @@ kernel_pid_t mainPid;
 neopixel_t led_stripe;
 menu_t menu;
 bool enableBtns = false;
+
+void microcoap_server_loop(void);
+extern int _netif_config(int argc, char **argv);
+
+char * get_name_of_player(void) {
+    puts("Please insert name");
+    //if error with name
+        //request other name
+    //else
+    return("M0.na.Musterino");
+}
+
+char * start_game(void) {
+    //if start successful
+        return("M0.st");
+    //else 
+        //try to start game again
+}
+
+char * is_initalized(void) {
+    //if initalized
+        puts("is initalized?");
+        return("M0.in");
+    //else
+        //return("not initalized");
+}
+
+char * get_result(void) {
+    //if has result
+        return("M0.re.0.123456");
+    //else return
+        //return("still playing")
+}
 
 void int_multiplexer_receive(void *arg)
 {
@@ -114,9 +163,21 @@ int highscore_cmd(void)
   return 0;
 }
 
+int start_server(int argc, char **argv) {
+    (void)argv;
+    (void)argc;
+
+    /* start coap server loop */
+    puts("Starting microcoap server");
+    microcoap_server_loop();
+
+    return 0;
+}
+
 static const menu_command_t menu_commands[] = {
   {"START GAME", "start game", start_game_cmd},
   {"HIGHSCORE", "highscore", highscore_cmd},
+  {"start_server", "starts the server", start_server},
   {NULL, NULL, NULL}
 };
 
@@ -125,6 +186,8 @@ int main(void)
     int32_t act_freq;
     color_rgb_t curr_color;
     printf("Welcome to Retro11.");
+
+    msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
     if (act_freq <= 0) {
