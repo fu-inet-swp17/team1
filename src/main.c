@@ -16,7 +16,7 @@
 #include "lcd_spi.h"
 #include "menu.h"
 
-//coap Server 
+//coap Server
 #include "msg.h"
 #include "shell.h"
 #include "net/fib.h"
@@ -55,7 +55,7 @@ char * get_name_of_player(void) {
 char * start_game(void) {
     //if start successful
         return("M0.st");
-    //else 
+    //else
         //try to start game again
 }
 
@@ -177,7 +177,6 @@ int start_server(int argc, char **argv) {
 static const menu_command_t menu_commands[] = {
   {"START GAME", "start game", start_game_cmd},
   {"HIGHSCORE", "highscore", highscore_cmd},
-  {"start_server", "starts the server", start_server},
   {NULL, NULL, NULL}
 };
 
