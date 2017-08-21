@@ -13,7 +13,7 @@ char stack[THREAD_STACKSIZE_MAIN];
 
 extern int gcoap_cli_cmd(int argc, char **argv);
 
-static char M0_ADDR[] = "2001:db8::1:1:1";
+static char M0_ADDR[] = "fe80::7b65:74c:6a25:718e";
 //static char M1_ADDR[] = "fe80::44e8:fbff:fea3:bfcb";
 
 static int M0_init = 0;
