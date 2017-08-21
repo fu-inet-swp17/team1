@@ -4,12 +4,6 @@ APPLICATION = coapClient
 # If no BOARD is found in the environment, use this default:
 BOARD ?= samr21-xpro
 
-# name of your application
-APPLICATION = coapServer
-
-# If no BOARD is found in the environment, use this default:
-BOARD ?= samr21-xpro
-
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../RIOT
 

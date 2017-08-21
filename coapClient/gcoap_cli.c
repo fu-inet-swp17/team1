@@ -63,9 +63,6 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu,
                 printf("%.*s\n", pdu->payload_len, (char *)pdu->payload);
                 return;
             }
-            if (strncmp(pld, "in", 2) == 0) {
-                set_is_init(m);
-            }
             if (strncmp(pld, "st", 2) == 0) {
                 set_is_working(m);   
             }
