@@ -83,7 +83,7 @@ int main(void)
     size_t numof = gnrc_netif_get(ifs);
 
     
-        dev = ifs[numof-1];
+    dev = ifs[numof-1];
 
     ipv6_addr_t addr;
     ipv6_addr_from_str(&addr, "2001:db8::1:1:1");
