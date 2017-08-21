@@ -14,7 +14,7 @@
 #include "thread.h"
 #include "xtimer.h"
 
-char motor_ctrl_thread_stack[THREAD_STACKSIZE_MAIN];
+char motor_ctrl_thread_stack[THREAD_STACKSIZE_DEFAULT - 512];
 void *motor_ctrl_thread_handler(void *arg)
 {
   (void) arg;

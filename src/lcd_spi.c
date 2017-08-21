@@ -357,11 +357,11 @@ int lcd_spi_draw_c(lcd_spi_t *dev, uint8_t x, uint8_t y, char c)
   uint8_t color;
 
   /* For every col */
-  for (int i = 0; i < 5; ++i) {
+  for (int i = 4; i >= 0; --i) {
     /* For every row */
-    for (int j = 0; j < 8; ++j) {
+    for (int j = 7; j >= 0; --j) {
       color = (character[i] >> j) & 1;
-      lcd_spi_set_pixel(dev, x - i, y - j, color);
+      lcd_spi_set_pixel(dev, x + i, y + j, color);
     }
   }
 
@@ -370,8 +370,8 @@ int lcd_spi_draw_c(lcd_spi_t *dev, uint8_t x, uint8_t y, char c)
 
 int lcd_spi_draw_s(lcd_spi_t *dev, uint8_t x, uint8_t y, const char *c, uint8_t n)
 {
-  for (int i = 0; i < 7; ++i)
-    lcd_spi_draw_c(dev, x - (i * 6), y, c[i]);
+  for (int i = 0; i < n; ++i)
+    lcd_spi_draw_c(dev, x + (i * 6), y, c[i]);
 
   return 0;
 }

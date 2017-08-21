@@ -98,10 +98,10 @@ static int handle_start_game(coap_rw_buffer_t *scratch, const coap_packet_t *inp
 
 static int handle_request_result(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt,
         uint8_t id_hi, uint8_t id_lo) {
-    
+
     const char* str = get_result();
     int len = strlen(str);
-    
+
     memcpy(response, str, len);
 
     return coap_make_response(scratch, outpkt, (const uint8_t *)response, len, id_hi, id_lo, &inpkt->tok, COAP_RSPCODE_CONTENT,

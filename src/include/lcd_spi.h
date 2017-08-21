@@ -40,6 +40,7 @@ typedef struct {
   gpio_t cmdselect;
   gpio_t reset;
   uint8_t ram[128][64];
+  bool reflection;
 } lcd_spi_t;
 
 /**
@@ -69,6 +70,8 @@ void lcd_spi_show(lcd_spi_t *dev);
 void lcd_spi_clear(lcd_spi_t *dev);
 
 void lcd_spi_reset(lcd_spi_t *dev);
+
+void lcd_spi_invert(lcd_spi_t *dev);
 
 /* Drawing Methods */
 

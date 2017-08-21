@@ -4,15 +4,20 @@
 void print_menu(menu_t *menu, int curr_item)
 {
   lcd_spi_clear(menu->display);
-  lcd_spi_draw_s(menu->display, 80, 40, "MAINMENU", 8);
+  lcd_spi_draw_s(menu->display, 44, 6, "MAINMENU", 8);
+  lcd_spi_draw_line(menu->display, 42, 13, 92, 13);
 
   for(int i = 0; i < menu->cmd_count; ++i) {
+    int str_len = strlen(menu->commands[i].name);
+    int start_pos = 64 - (str_len / 2) * 5;
+
     if (i == curr_item) {
       /* Draw Box Arround Item */
+      lcd_spi_draw_rect(menu->display, start_pos - 2, 15 + (i * 9), (start_pos + 1) + (6 * str_len), 25 + (i * 9), false);
     }
 
     /* Draw Menu Item */
-    lcd_spi_draw_s(menu->display, 80, 40, menu->commands[i].name, strlen(menu->commands[0].name));
+    lcd_spi_draw_s(menu->display, start_pos, 17 + (i * 9), menu->commands[i].name, str_len);
   }
 
   lcd_spi_show(menu->display);
