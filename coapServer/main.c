@@ -36,14 +36,6 @@ char * start_game(void) {
         //try to start game again
 }
 
-char * is_initalized(void) {
-    //if initalized
-        puts("is initalized?");
-        return("M0.in");
-    //else
-        //return("not initalized");
-}
-
 char * get_result(void) {
     //if has result
         return("M0.re.0.123456");
@@ -86,8 +78,8 @@ int main(void)
     dev = ifs[numof-1];
 
     ipv6_addr_t addr;
-    ipv6_addr_from_str(&addr, "2001:db8::1:1:1");
-    gnrc_ipv6_netif_add_addr    ( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_NON_UNICAST );   
+    ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
+    gnrc_ipv6_netif_add_addr    ( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );   
 
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(commands, line_buf, SHELL_DEFAULT_BUFSIZE);
