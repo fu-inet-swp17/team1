@@ -29,6 +29,7 @@ void get_player_name(game_t *dev, char *name)
 
   while(1) {
     /* Clear display */
+    puts("Drawing name");
     lcd_spi_clear(dev->display);
     lcd_spi_draw_s(dev->display, 10, 5, "ENTER PLAYER NAME: ", 19);
     for(i = 0; i < curr_idx; ++i)

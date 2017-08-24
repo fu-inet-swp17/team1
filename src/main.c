@@ -42,6 +42,7 @@ game_t game;
 bool enableBtns = false;
 char result[128];
 char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT - 512];
+char game_server_thread_stack[THREAD_STACKSIZE_DEFAULT - 512];
 
 void microcoap_server_loop(void);
 extern int _netif_config(int argc, char **argv);
@@ -53,12 +54,20 @@ void *coap_server_thread_handler(void *arg)
   return NULL;
 }
 
+void *game_server_thread_handler(void *arg)
+{
+  game_run(&game);
+
+  return NULL;
+}
+
 char * get_name_of_player(void) {
+  puts("Get name of player");
   if (game.state == NAME_READY) {
     sprintf(result, "M0.na.%s", game.playername);
     return(result);
   } else {
-    return("");
+    return "unknown";
   }
 }
 
@@ -72,7 +81,7 @@ char * get_result(void) {
     sprintf(result, "M0.re.0.%ld", game.reaction_time);
     return(result);
   } else {
-    return("");
+    return "result";
   }
 }
 
@@ -97,17 +106,17 @@ int main(void)
     printf("Welcome to Retro11.");
 
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
- 
+
     kernel_pid_t dev;
     kernel_pid_t ifs[GNRC_NETIF_NUMOF];
     size_t numof = gnrc_netif_get(ifs);
 
-    
+
     dev = ifs[numof-1];
 
     ipv6_addr_t addr;
     ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
-    gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );  
+    gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
     if (act_freq <= 0) {
@@ -183,7 +192,11 @@ int main(void)
         coap_server_thread_handler, NULL, "coap thread");
 
     game_init(&game, &motor_controller, &display, &multiplexer);
-    game_run(&game);
+
+    thread_create(game_server_thread_stack,
+        sizeof(game_server_thread_stack),
+        THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
+        game_server_thread_handler, NULL, "game thread");
 
     return 0;
 }
