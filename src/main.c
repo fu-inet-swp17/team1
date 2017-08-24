@@ -97,10 +97,17 @@ int main(void)
     printf("Welcome to Retro11.");
 
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
+ 
+    kernel_pid_t dev;
+    kernel_pid_t ifs[GNRC_NETIF_NUMOF];
+    size_t numof = gnrc_netif_get(ifs);
+
+    
+    dev = ifs[numof-1];
 
     ipv6_addr_t addr;
     ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
-    gnrc_ipv6_netif_add_addr    ( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );  
+    gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );  
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
     if (act_freq <= 0) {
