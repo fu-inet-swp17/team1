@@ -6,9 +6,11 @@
 #define MAX_RESPONSE_LEN 500
 static uint8_t response[MAX_RESPONSE_LEN] = { 0 };
 
-extern char * get_name_of_player(void);
+extern void get_name_of_player(char *value);
 extern char * start_game(void);
-extern char * get_result(void);
+extern void get_result(char *value);
+extern void set_winner(void);
+extern void set_looser(void);
 
 static int handle_request_name(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt,
         uint8_t id_hi, uint8_t id_lo);
@@ -50,7 +52,8 @@ const coap_endpoint_t endpoints[] =
 
 static int handle_request_name(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt,
         uint8_t id_hi, uint8_t id_lo) {
-    const char *str = get_name_of_player();
+    char str[40] = "unknown";
+    get_name_of_player(str);
     int len = strlen(str);
 
     memcpy(response, str, len);
@@ -73,10 +76,11 @@ static int handle_start_game(coap_rw_buffer_t *scratch, const coap_packet_t *inp
 
 static int handle_request_result(coap_rw_buffer_t *scratch, const coap_packet_t *inpkt, coap_packet_t *outpkt,
         uint8_t id_hi, uint8_t id_lo) {
-    
-    const char* str = get_result();
+
+    char str[40] = "result";
+    get_result(str);
     int len = strlen(str);
-    
+
     memcpy(response, str, len);
 
     return coap_make_response(scratch, outpkt, (const uint8_t *)response, len, id_hi, id_lo, &inpkt->tok, COAP_RSPCODE_CONTENT,
@@ -88,7 +92,7 @@ static int handle_set_winner(coap_rw_buffer_t *scratch, const coap_packet_t *inp
     const char *str = "winner was displayed";
     int len = strlen(str);
 
-    //display winner
+    set_winner();
 
     memcpy(response, str, len);
 
@@ -101,7 +105,7 @@ static int handle_set_looser(coap_rw_buffer_t *scratch, const coap_packet_t *inp
     const char *str = "looser was displayed";
     int len = strlen(str);
 
-    //display looser
+    set_looser();
 
     memcpy(response, str, len);
 

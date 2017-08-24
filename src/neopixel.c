@@ -92,9 +92,6 @@ void neopixel_show(neopixel_t *dev)
   int pin = (1 << (dev->data_out & (0x1f)));
 
   gpio_clear(dev->data_out);
-  for(i = 0; i < dev->led_count; i++) {
-    printf("LED %03d: r: %d g: %d b: %d\n", i, dev->pixels[i].r, dev->pixels[i].g, dev->pixels[i].b);
-  }
 
   /* Disable IRQ's, we have hard time bounds here.
    * Restore it afterwards */

@@ -27,9 +27,9 @@ void get_player_name(game_t *dev, char *name)
   char alphabet[28] = { '_', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
     'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' '};
 
+
   while(1) {
     /* Clear display */
-    puts("Drawing name");
     lcd_spi_clear(dev->display);
     lcd_spi_draw_s(dev->display, 10, 5, "ENTER PLAYER NAME: ", 19);
     for(i = 0; i < curr_idx; ++i)
@@ -38,7 +38,7 @@ void get_player_name(game_t *dev, char *name)
 
     lcd_spi_show(dev->display);
 
-    for(action = 0;; action = (action + 1) % 3) {
+    for(action = 0;; ++action) {
       if (multiplexer_receive(dev->mplexer, action) == 1)
         break;
     }
@@ -58,6 +58,8 @@ void get_player_name(game_t *dev, char *name)
         else
           curr_char_idx--;
         break;
+      default:
+        break;
     }
 
     if (curr_idx >= 15) {
@@ -65,7 +67,7 @@ void get_player_name(game_t *dev, char *name)
       return;
     }
 
-    xtimer_usleep(250000);
+    xtimer_usleep(7500);
   }
 }
 
@@ -78,9 +80,12 @@ void game_run(game_t *dev)
   while (1) {
     dev->state = INIT;
     /* Ask for player name */
+    puts("GameLoop: GetPlayerName.");
     get_player_name(dev, dev->playername);
+    puts("GameLoop: GetPlayerName done.");
     dev->state = NAME_READY;
 
+    puts("GameLoop: Display waiting for server.");
     lcd_spi_clear(dev->display);
     lcd_spi_draw_s(dev->display, 11, 28, "WAITING FOR SERVER", 18);
     lcd_spi_show(dev->display);
@@ -90,44 +95,56 @@ void game_run(game_t *dev)
       if (dev->state == START_GAME)
         break;
     }
+
+    lcd_spi_clear(dev->display);
+    lcd_spi_draw_s(dev->display, 11, 28, "GO", 18);
+    lcd_spi_show(dev->display);
+
     motor_timeout = random_uint32_range(2000000, 20000000);
     multiplexer_receive(dev->mplexer, 0);
-    enableBtns = false;
-    while (1) {
-      if (xtimer_msg_receive_timeout(&msg, motor_timeout + 10000000) == -1) {
-        puts("Something went wrong, the motor did not react.");
-        dev->state = FAILED;
-        break;
-      }
 
-      if (msg.sender_pid == (dev->mctrl)->ctrl_pid) {
-        enableBtns = true;
-        start_time = xtimer_now_usec();
+    /* Start motor */
+    puts("Starting motor.");
+    enableBtns = true;
+    motor_controller_set_speed(dev->mctrl, 200, motor_timeout);
+    start_time = xtimer_now_usec();
 
-        if (xtimer_msg_receive_timeout(&msg, 100000000) == -1) {
-          puts("Player did not react in time.");
-          dev->state = FAILED;
-          break;
-        }
-
-        dev->reaction_time = xtimer_now_usec() - start_time;
-        printf("Player reacted in %ldms.\n", dev->reaction_time);
-        dev->state = GET_RESULT;
-        break;
-      }
-    }
-
-    if (dev->state == FAILED)
+    if (xtimer_msg_receive_timeout(&msg, motor_timeout) == -1) {
+      puts("GameLoop: Player did not react in time.");
+      motor_controller_set_speed(dev->mctrl, 0, 0);
+      dev->state = FAILED;
       continue;
+    }
+    puts("Message received.");
+    enableBtns = false;
+
+    dev->reaction_time = xtimer_now_usec() - start_time;
+    puts("Remember time.");
+    motor_controller_set_speed(dev->mctrl, 0, 0);
+    puts("Stop motor.");
+    dev->state = GET_RESULT;
+    puts("state is set.");
 
     /* Get Results */
     lcd_spi_clear(dev->display);
     lcd_spi_draw_s(dev->display, 11, 5, "YOU REACTED IN:", 15);
-    sprintf(number, "%ldms", dev->reaction_time);
+    sprintf(number, "%ldus", dev->reaction_time);
     lcd_spi_draw_s(dev->display, 11, 15, number, strlen(number));
     lcd_spi_show(dev->display);
 
+    puts("waiting for winner.");
     /* Display winner */
+    while(1) {
+      if(dev->state == WINNER || dev->state == LOOSER)
+        break;
+    }
+    puts("Received.");
+
+    lcd_spi_clear(dev->display);
+    lcd_spi_draw_s(dev->display, 11, 15, dev->playername, strlen(dev->playername));
+    lcd_spi_show(dev->display);
+
+    xtimer_sleep(5);
   }
 }
 

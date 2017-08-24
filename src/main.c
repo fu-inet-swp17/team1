@@ -36,20 +36,21 @@ dcmotor_t motor_a, motor_b;
 multiplexer_t multiplexer;
 motor_controller_t motor_controller;
 lcd_spi_t display;
-kernel_pid_t mainPid;
+kernel_pid_t gamePid;
 neopixel_t led_stripe;
 game_t game;
-bool enableBtns = false;
-char result[128];
-char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT - 512];
-char game_server_thread_stack[THREAD_STACKSIZE_DEFAULT - 512];
+volatile bool enableBtns = false;
+char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT + 1024];
+char game_server_thread_stack[THREAD_STACKSIZE_DEFAULT];
 
 void microcoap_server_loop(void);
 extern int _netif_config(int argc, char **argv);
 
 void *coap_server_thread_handler(void *arg)
 {
+  puts("Starting network server.");
   microcoap_server_loop();
+  puts("NetworkServer done.");
 
   return NULL;
 }
@@ -61,14 +62,12 @@ void *game_server_thread_handler(void *arg)
   return NULL;
 }
 
-char * get_name_of_player(void) {
-  puts("Get name of player");
-  if (game.state == NAME_READY) {
-    sprintf(result, "M0.na.%s", game.playername);
-    return(result);
-  } else {
-    return "unknown";
-  }
+void get_name_of_player(char *value) {
+  if (game.state != NAME_READY)
+    return;
+
+  sprintf(value, "M0.na.%s", game.playername);
+  return;
 }
 
 char * start_game(void) {
@@ -76,13 +75,25 @@ char * start_game(void) {
   return("M0.st");
 }
 
-char * get_result(void) {
-  if (game.state == GET_RESULT) {
-    sprintf(result, "M0.re.0.%ld", game.reaction_time);
-    return(result);
-  } else {
-    return "result";
-  }
+void get_result(char *value) {
+  if (game.state != GET_RESULT)
+    return;
+
+  sprintf(value, "M0.re.%ld", game.reaction_time);
+  return;
+}
+
+void set_winner(void)
+{
+  puts("winner");
+  game.state = WINNER;
+  return;
+}
+
+void set_looser(void)
+{
+  puts("looser");
+  game.state = LOOSER;
 }
 
 void int_multiplexer_receive(void *arg)
@@ -92,12 +103,15 @@ void int_multiplexer_receive(void *arg)
 
   msg_t msg;
 
-  printf("Interrupt: address %d value %d\n", multiplexer.curr_addr, 1);
-
   msg.type = multiplexer.curr_addr;
   msg.content.value = 1;
-  msg_send_int(&msg, mainPid);
+  msg_send_int(&msg, gamePid);
+  puts("Done sending message.");
 }
+
+static const shell_command_t shell_commands[] = {
+  {NULL, NULL, NULL}
+};
 
 int main(void)
 {
@@ -179,12 +193,8 @@ int main(void)
     lcd_spi_clear(&display);
     lcd_spi_show(&display);
     printf("Display is done.\n");
-
     /* TODO: We do not have a battery, so its always the same. :) */
     random_init(xtimer_now_usec());
-
-    /* Save PID to enable messaging later on. */
-    mainPid = thread_getpid();
 
     thread_create(coap_server_thread_stack,
         sizeof(coap_server_thread_stack),
@@ -193,10 +203,15 @@ int main(void)
 
     game_init(&game, &motor_controller, &display, &multiplexer);
 
-    thread_create(game_server_thread_stack,
+    gamePid = thread_create(game_server_thread_stack,
         sizeof(game_server_thread_stack),
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
         game_server_thread_handler, NULL, "game thread");
+
+    puts("Main: Starting shell.");
+    char line_buf[SHELL_DEFAULT_BUFSIZE];
+    shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
+    puts("Main: Shell done.");
 
     return 0;
 }
