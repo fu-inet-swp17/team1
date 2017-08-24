@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "msg.h"
 
 #include "thread.h"
@@ -13,11 +14,9 @@ char stack[THREAD_STACKSIZE_MAIN];
 
 extern int gcoap_cli_cmd(int argc, char **argv);
 
-static char M0_ADDR[] = "fe80::7b65:74c:6a25:718e";
-//static char M1_ADDR[] = "fe80::44e8:fbff:fea3:bfcb";
+static char M0_ADDR[] = "ff02::1:a0:a0";
+//static char M1_ADDR[] = "ff02::1:b1:b1";
 
-static int M0_init = 0;
-static int M1_init = 0;
 static char * M0_name = "";
 static char * M1_name = "";
 static int M0_has_name = 0;
@@ -28,17 +27,6 @@ static char * M0_result = "";
 static char * M1_result = "";
 static int M0_rcvd_result = 0;
 static int M1_rcvd_result = 0;
-
-void set_is_init(int m) {
-    if (m == 0){
-        M0_init = 1;
-        printf("M0 Initalized\n");
-    }
-    else {
-        M1_init = 1;
-        printf("M1 Initalized\n");
-    }
-}
 
 void set_name(char * name, int m) {
     if (m == 0){
@@ -80,59 +68,62 @@ void set_result(char * result, int m) {
 void *thread_handler(void *arg) {
     (void) arg;
     while (1) {
-        if (M0_init == 0) {
-            char * message[] = {"coap", "get", M0_ADDR, "5683", "/init/status"};
-            gcoap_cli_cmd(5, message);
+        if (M0_has_name == 0/* || M1_has_name == 0*/) {
+            char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/name"};
+            gcoap_cli_cmd(5, message1);
+            /*char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/name"};
+            gcoap_cli_cmd(5, message2);*/
             xtimer_sleep(5);
         }
         else {
-            if (M0_has_name == 0) {
-                char * message[] = {"coap", "get", M0_ADDR, "5683", "/request/name"};
-                gcoap_cli_cmd(5, message);
-                xtimer_sleep(20);
+            if (M0_is_working == 0/* || M1_is_working == 0*/) {
+                char * message1[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
+                gcoap_cli_cmd(5, message1);
+                /*char * message2[] = {"coap", "get", M1_ADDR, "5683", "/start/game"};
+                gcoap_cli_cmd(5, message2);*/
+                xtimer_sleep(5);
             }
             else {
-                if (M0_is_working == 0) {
-                    char * message[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
-                    gcoap_cli_cmd(5, message);
+                if (M0_rcvd_result == 0/* || M1_rcvd_result == 0*/) {
+                    char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/result"};
+                    gcoap_cli_cmd(5, message1);
+                    /*char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/result"};
+                    gcoap_cli_cmd(5, message2);*/
                     xtimer_sleep(5);
                 }
                 else {
-                    if (M0_rcvd_result == 0) {
-                        char * message[] = {"coap", "get", M0_ADDR, "5683", "/request/result"};
-                        gcoap_cli_cmd(5, message);
-                        xtimer_sleep(5);
+                    /*if (atol(M0_result) < atol(M1_result)) {
+                        char * message1[] = {"coap", "get", M0_ADDR, "5683", "/print/looser"};
+                        gcoap_cli_cmd(5, message1);
+                        char * message2[] = {"coap", "get", M1_ADDR, "5683", "/print/winner"};
+                        gcoap_cli_cmd(5, message2);
+                        //send result to Database
+                    }
+                    else if (atol(M0_result) > atol(M1_result)) {
+                        char * message1[] = {"coap", "get", M0_ADDR, "5683", "/print/looser"};
+                        gcoap_cli_cmd(5, message1);
+                        char * message2[] = {"coap", "get", M1_ADDR, "5683", "/print/winner"};
+                        gcoap_cli_cmd(5, message2);
+                        //send result to Database
                     }
                     else {
-                        /*if (toFloat(M0_result) < toFloat(M1_result)) {
-                            //send winner to M1 and looser to M2
-                            //send result to Database
-                        }
-                        else if (toFloat(M0_result) > toFloat(M1_result)) {
-                            //send winner to M1 and looser to M2
-                            //send result to Database
-                        }
-                        else {
-                            //send draw to both
-                            //send result to database
-                        }*/
+                        //send draw to both
+                        //send result to database
+                    }*/
 
-                        printf("\n\nResetting machine status\n\n\n");
-                        
-                        M0_init = 0;
-                        M1_init = 0;
-                        M0_name = "";
-                        M1_name = "";
-                        M0_has_name = 0;
-                        M1_has_name = 0; 
-                        M0_is_working = 0;
-                        M1_is_working = 0;
-                        M0_result = "";
-                        M1_result = "";
-                        M0_rcvd_result = 0;
-                        M1_rcvd_result = 0;
-                        xtimer_sleep(5);
-                    }    
+                    printf("\n\nResetting machine status\n\n\n");
+                    
+                    M0_name = "";
+                    M1_name = "";
+                    M0_has_name = 0;
+                    M1_has_name = 0; 
+                    M0_is_working = 0;
+                    M1_is_working = 0;
+                    M0_result = "";
+                    M1_result = "";
+                    M0_rcvd_result = 0;
+                    M1_rcvd_result = 0;
+                    xtimer_sleep(5);    
                 }
             }
         }

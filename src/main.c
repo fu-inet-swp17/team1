@@ -67,10 +67,6 @@ char * start_game(void) {
   return("M0.st");
 }
 
-char * is_initalized(void) {
-  return("M0.in");
-}
-
 char * get_result(void) {
   if (game.state == GET_RESULT) {
     sprintf(result, "M0.re.0.%ld", game.reaction_time);
@@ -101,6 +97,10 @@ int main(void)
     printf("Welcome to Retro11.");
 
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
+
+    ipv6_addr_t addr;
+    ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
+    gnrc_ipv6_netif_add_addr    ( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );  
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
     if (act_freq <= 0) {
