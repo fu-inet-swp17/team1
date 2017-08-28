@@ -36,30 +36,38 @@ dcmotor_t motor_a, motor_b;
 multiplexer_t multiplexer;
 motor_controller_t motor_controller;
 lcd_spi_t display;
-kernel_pid_t mainPid;
+kernel_pid_t gamePid;
 neopixel_t led_stripe;
 game_t game;
-bool enableBtns = false;
-char result[128];
-char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT - 512];
+volatile bool enableBtns = false;
+char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT + 1024];
+char game_server_thread_stack[THREAD_STACKSIZE_DEFAULT];
 
 void microcoap_server_loop(void);
 extern int _netif_config(int argc, char **argv);
 
 void *coap_server_thread_handler(void *arg)
 {
+  puts("Starting network server.");
   microcoap_server_loop();
+  puts("NetworkServer done.");
 
   return NULL;
 }
 
-char * get_name_of_player(void) {
-  if (game.state == NAME_READY) {
-    sprintf(result, "M0.na.%s", game.playername);
-    return(result);
-  } else {
-    return("");
-  }
+void *game_server_thread_handler(void *arg)
+{
+  game_run(&game);
+
+  return NULL;
+}
+
+void get_name_of_player(char *value) {
+  if (game.state != NAME_READY)
+    return;
+
+  sprintf(value, "M0.na.%s", game.playername);
+  return;
 }
 
 char * start_game(void) {
@@ -67,13 +75,25 @@ char * start_game(void) {
   return("M0.st");
 }
 
-char * get_result(void) {
-  if (game.state == GET_RESULT) {
-    sprintf(result, "M0.re.0.%ld", game.reaction_time);
-    return(result);
-  } else {
-    return("");
-  }
+void get_result(char *value) {
+  if (game.state != GET_RESULT)
+    return;
+
+  sprintf(value, "M0.re.%ld", game.reaction_time);
+  return;
+}
+
+void set_winner(void)
+{
+  puts("winner");
+  game.state = WINNER;
+  return;
+}
+
+void set_looser(void)
+{
+  puts("looser");
+  game.state = LOOSER;
 }
 
 void int_multiplexer_receive(void *arg)
@@ -83,12 +103,15 @@ void int_multiplexer_receive(void *arg)
 
   msg_t msg;
 
-  printf("Interrupt: address %d value %d\n", multiplexer.curr_addr, 1);
-
   msg.type = multiplexer.curr_addr;
   msg.content.value = 1;
-  msg_send_int(&msg, mainPid);
+  msg_send_int(&msg, gamePid);
+  puts("Done sending message.");
 }
+
+static const shell_command_t shell_commands[] = {
+  {NULL, NULL, NULL}
+};
 
 int main(void)
 {
@@ -97,17 +120,17 @@ int main(void)
     printf("Welcome to Retro11.");
 
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
- 
+
     kernel_pid_t dev;
     kernel_pid_t ifs[GNRC_NETIF_NUMOF];
     size_t numof = gnrc_netif_get(ifs);
 
-    
+
     dev = ifs[numof-1];
 
     ipv6_addr_t addr;
     ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
-    gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );  
+    gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
     if (act_freq <= 0) {
@@ -170,12 +193,8 @@ int main(void)
     lcd_spi_clear(&display);
     lcd_spi_show(&display);
     printf("Display is done.\n");
-
     /* TODO: We do not have a battery, so its always the same. :) */
     random_init(xtimer_now_usec());
-
-    /* Save PID to enable messaging later on. */
-    mainPid = thread_getpid();
 
     thread_create(coap_server_thread_stack,
         sizeof(coap_server_thread_stack),
@@ -183,7 +202,16 @@ int main(void)
         coap_server_thread_handler, NULL, "coap thread");
 
     game_init(&game, &motor_controller, &display, &multiplexer);
-    game_run(&game);
+
+    gamePid = thread_create(game_server_thread_stack,
+        sizeof(game_server_thread_stack),
+        THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
+        game_server_thread_handler, NULL, "game thread");
+
+    puts("Main: Starting shell.");
+    char line_buf[SHELL_DEFAULT_BUFSIZE];
+    shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
+    puts("Main: Shell done.");
 
     return 0;
 }

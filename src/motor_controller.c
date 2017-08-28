@@ -14,7 +14,7 @@
 #include "thread.h"
 #include "xtimer.h"
 
-char motor_ctrl_thread_stack[THREAD_STACKSIZE_DEFAULT - 512];
+char motor_ctrl_thread_stack[THREAD_STACKSIZE_DEFAULT];
 void *motor_ctrl_thread_handler(void *arg)
 {
   (void) arg;
@@ -25,7 +25,7 @@ void *motor_ctrl_thread_handler(void *arg)
     msg_receive(&m);
 
     dev = m.content.ptr;
-    printf("Setting speed to %d with timeout %ldms.\n", dev->param.speed, dev->param.timeout);
+    printf("MotorController: Setting speed to %d with timeout %ldms.\n", dev->param.speed, dev->param.timeout);
 
     dcmotor_set_speed(dev->motor_a, dev->param.speed);
     dcmotor_set_speed(dev->motor_b, dev->param.speed);
@@ -59,17 +59,8 @@ kernel_pid_t motor_controller_init(motor_controller_t *dev, dcmotor_t *motor_a, 
 
 int motor_controller_set_speed(motor_controller_t *dev, int16_t speed, uint32_t timeout)
 {
-  msg_t msg;
-
-  dev->param.speed = speed;
-  dev->param.timeout = timeout;
-  dev->param.pid = thread_getpid();
-
-  msg.type = 0;
-  msg.content.ptr = dev;
-
-  if (msg_send(&msg, dev->ctrl_pid) == 0)
-    return -1;
+  dcmotor_set_speed(dev->motor_a, speed);
+  dcmotor_set_speed(dev->motor_b, speed);
 
   return 0;
 }

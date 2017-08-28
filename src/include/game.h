@@ -21,6 +21,8 @@ typedef enum {
   NAME_READY,
   START_GAME,
   GET_RESULT,
+  WINNER,
+  LOOSER,
   FAILED
 } game_state_t;
 
