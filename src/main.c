@@ -17,6 +17,7 @@
 #include "lcd_spi.h"
 
 //coap Server
+#include "machine.h"
 #include "msg.h"
 #include "shell.h"
 #include "net/fib.h"
@@ -66,20 +67,20 @@ void get_name_of_player(char *value) {
   if (game.state != NAME_READY)
     return;
 
-  sprintf(value, "M0.na.%s", game.playername);
+  sprintf(value, "%s%s.%s", MACHINE, NAME, game.playername);
   return;
 }
 
 char * start_game(void) {
   game.state = START_GAME;
-  return("M0.st");
+  return(MACHINE START);
 }
 
 void get_result(char *value) {
   if (game.state != GET_RESULT)
     return;
 
-  sprintf(value, "M0.re.%ld", game.reaction_time);
+  sprintf(value, "%s%s.%ld", MACHINE, RESULT, game.reaction_time);
   return;
 }
 
@@ -129,7 +130,12 @@ int main(void)
     dev = ifs[numof-1];
 
     ipv6_addr_t addr;
-    ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
+    if ( strcmp(MACHINE, "m0") == 0 ) {
+      ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
+    }
+    else {
+      ipv6_addr_from_str(&addr, "ff02::1:b1:b1");
+    }
     gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );
 
     act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
