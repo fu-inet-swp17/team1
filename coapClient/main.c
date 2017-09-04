@@ -127,16 +127,16 @@ void *thread_handler(void *arg) {
                         gcoap_cli_cmd(5, message1);
                         xtimer_sleep(5);
                         /*if (atol(M0_result) < atol(M1_result)) {
-                            char * message1[] = {"coap", "get", M0_ADDR, "5683", "/print/looser"};
+                            char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/winner"};
                             gcoap_cli_cmd(5, message1);
-                            char * message2[] = {"coap", "get", M1_ADDR, "5683", "/print/winner"};
+                            char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/looser"};
                             gcoap_cli_cmd(5, message2);
                             //send result to Database
                         }
                         else if (atol(M0_result) > atol(M1_result)) {
-                            char * message1[] = {"coap", "get", M0_ADDR, "5683", "/print/looser"};
+                            char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/looser"};
                             gcoap_cli_cmd(5, message1);
-                            char * message2[] = {"coap", "get", M1_ADDR, "5683", "/print/winner"};
+                            char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/winner"};
                             gcoap_cli_cmd(5, message2);
                             //send result to Database
                         }
@@ -196,9 +196,11 @@ int main(void) {
     puts("coap ready");
 
     // thread für pings
-    thread_create(ping_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1, 0, ping_handler, NULL, "ping");
+    thread_create(ping_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1, 
+        THREAD_CREATE_STACKTEST, ping_handler, NULL, "ping");
 
-    thread_create(coap_client_thread_stack, sizeof(coap_client_thread_stack), THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST, thread_handler, NULL, "client_thread");
+    thread_create(coap_client_thread_stack, sizeof(coap_client_thread_stack), THREAD_PRIORITY_MAIN - 1, 
+        THREAD_CREATE_STACKTEST, thread_handler, NULL, "client_thread");
 
     puts("Main: Starting shell.");
     char line_buf[SHELL_DEFAULT_BUFSIZE];

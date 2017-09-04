@@ -12,14 +12,13 @@ extern char * nameslist[];
 extern char * resultslist[];
 
 int8_t senml_json_strout(char* json_buf, uint8_t dev_type) {
-//    phydat_t res;
     saul_reg_t* dev = saul_reg_find_type(dev_type);
 
     char dev_name[21];
     strncpy(dev_name, dev->name, 20);
     dev_name[20] = 0;
 
-    char names[25];
+    char names[250];
     strncpy(names, "", 1);
     for (size_t i=0; i<entry_counter; i++) {
         strncat(names, nameslist[i], 10);
@@ -28,7 +27,7 @@ int8_t senml_json_strout(char* json_buf, uint8_t dev_type) {
         }
     }
 
-    char results[25];
+    char results[250];
     strncpy(results, "", 1);
     for (size_t i=0; i<entry_counter; i++) {
         strncat(results, resultslist[i], 10);
@@ -96,7 +95,7 @@ ssize_t senml_json_send(coap_pkt_t* pdu, uint8_t *buf, size_t len, uint8_t dev_t
 }
 
 ssize_t entry_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len) {
-    puts("Data from entrys requested.");
+    puts("Data from entries requested.");
     return senml_json_send(pdu, buf, len, SAUL_CLASS_UNDEF);
 }
 
@@ -106,9 +105,10 @@ void* ping_handler(void* args) {
     remote.port = SERVER_CONN_PORT;
     ipv6_addr_from_str((ipv6_addr_t *)&remote.addr.ipv6, "ff02::1");
     
-    puts("Ping thread running");
+    printf("\n\nPing thread running\n\n\n");
     
     while(true) {
+        printf("\n\nPing thread running\n\n\n");
         ssize_t res = sock_udp_send(
             NULL,
             app_id,
@@ -143,7 +143,7 @@ void* ping_handler(void* args) {
 }
 
 const coap_resource_t coap_resources[] = {
-    {"/se-app/entrys", COAP_GET, &entry_handler}
+    {"/se-app/entries", COAP_GET, &entry_handler}
 };
 
 gcoap_listener_t coap_listener = {
