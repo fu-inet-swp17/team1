@@ -39,7 +39,7 @@ static int restart_counter = 0;
 
 int entry_counter = 0;
 char * nameslist[50];
-char * resultslist[50];
+int resultslist[50];
 
 void set_name(char * name, int m) {
     if (m == 0){
@@ -149,8 +149,8 @@ void *thread_handler(void *arg) {
                         
                         nameslist[entry_counter] = M0_name;
                         nameslist[entry_counter+1] = M1_name;
-                        resultslist[entry_counter] = M0_result;
-                        resultslist[entry_counter+1] = M1_result;
+                        resultslist[entry_counter] = atoi(M0_result);
+                        resultslist[entry_counter+1] = atoi(M1_result);
                         entry_counter += 2;
 
                         if (entry_counter >= 48){

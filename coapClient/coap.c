@@ -9,48 +9,32 @@
 
 extern int entry_counter;
 extern char * nameslist[];
-extern char * resultslist[];
+extern int resultslist[];
 
 int8_t senml_json_strout(char* json_buf, uint8_t dev_type) {
-    saul_reg_t* dev = saul_reg_find_type(dev_type);
+    (void)dev_type;
 
-    char dev_name[21];
-    strncpy(dev_name, dev->name, 20);
-    dev_name[20] = 0;
-
-    char names[250];
-    strncpy(names, "", 1);
-    for (size_t i=0; i<entry_counter; i++) {
-        strncat(names, nameslist[i], 10);
-        if (i<entry_counter-1) {
-            strncat(names, ",", 1);
-        }
-    }
-
-    char results[250];
-    strncpy(results, "", 1);
-    for (size_t i=0; i<entry_counter; i++) {
-        strncat(results, resultslist[i], 10);
-        if (i<entry_counter-1) {
-            strncat(results, ",", 1);
-        }
-    }
+    char *dev_name = "reaction_game";
 
     senml_base_info_t base_info = {
         .version = SENML_SUPPORTED_VERSION,
         .base_name = dev_name,
     };
-    senml_record_t records = {
-        .name = names,
-        .value_sum = 0,
-        .value_type = SENML_TYPE_STRING,
-        .value.s = results
-    };
+
+    senml_record_t records[entry_counter];
+
+    for (int i=0; i<entry_counter; i++) {
+        records[i].name = nameslist[i];
+        records[i].value_type = SENML_TYPE_INT;
+        records[i].value.f = resultslist[i];
+    }
+
     senml_pack_t pack = {
         .base_info = &base_info,
         .num = 1,
-        .records = &records
+        .records = records
     };
+    
     int8_t senml_res = senml_encode_json_s(&pack, json_buf, SENML_LEN);
 
     if (!senml_res) {
