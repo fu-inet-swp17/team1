@@ -11,6 +11,7 @@
 #include "motor_controller.h"
 #include "lcd_spi.h"
 #include "multiplexer.h"
+#include "neopixel.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,13 +32,14 @@ typedef struct {
   motor_controller_t *mctrl;
   lcd_spi_t *display;
   multiplexer_t *mplexer;
+  neopixel_t *led_stripe;
   volatile game_state_t state;
   uint32_t reaction_time;
   char playername[17];
 } game_t;
 
 void game_run(game_t *dev);
-void game_init(game_t *dev, motor_controller_t *mctrl, lcd_spi_t *display, multiplexer_t *mplexer);
+void game_init(game_t *dev, motor_controller_t *mctrl, lcd_spi_t *display, multiplexer_t *mplexer, neopixel_t *led_stripe);
 
 #ifdef __cplusplus
 }

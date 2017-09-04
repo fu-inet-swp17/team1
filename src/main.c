@@ -201,7 +201,7 @@ int main(void)
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
         coap_server_thread_handler, NULL, "coap thread");
 
-    game_init(&game, &motor_controller, &display, &multiplexer);
+    game_init(&game, &motor_controller, &display, &multiplexer, &led_stripe);
 
     gamePid = thread_create(game_server_thread_stack,
         sizeof(game_server_thread_stack),

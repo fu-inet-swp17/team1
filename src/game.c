@@ -16,7 +16,83 @@
 #include "random.h"
 #include "string.h"
 
+#define LED_DISTANCE (2U)
+
 extern bool enableBtns;
+
+void play_winner_animation(game_t *dev)
+{
+  bool flip = true;
+  color_rgb_t color;
+
+  for(int i = 0; i < 20; ++i) {
+    for(int j = 0; j < (dev->led_stripe->led_count - 2); ++j) {
+      if((j % 2 != 0)) {
+        color.r = 0;
+        color.b = 0;
+
+        if(flip)
+          color.g = 255;
+        else
+          color.g = 0;
+
+        neopixel_set_pixel_color(dev->led_stripe, j, color);
+      } else {
+        color.r = 0;
+        color.b = 0;
+
+        if(flip)
+          color.g = 0;
+        else
+          color.g = 255;
+
+
+        neopixel_set_pixel_color(dev->led_stripe, j, color);
+      }
+    }
+
+    neopixel_show(dev->led_stripe);
+    xtimer_usleep(200000);
+    flip = !flip;
+  }
+}
+
+void play_looser_animation(game_t *dev)
+{
+  bool flip = true;
+  color_rgb_t color;
+
+  for(int i = 0; i < 20; ++i) {
+    for(int j = 0; j < (dev->led_stripe->led_count - 2); ++j) {
+      if((j % 2 != 0)) {
+        color.g = 0;
+        color.b = 0;
+
+        if(flip)
+          color.r = 255;
+        else
+          color.r = 0;
+
+        neopixel_set_pixel_color(dev->led_stripe, j, color);
+      } else {
+        color.g = 0;
+        color.b = 0;
+
+        if(flip)
+          color.r = 0;
+        else
+          color.r = 255;
+
+
+        neopixel_set_pixel_color(dev->led_stripe, j, color);
+      }
+    }
+
+    neopixel_show(dev->led_stripe);
+    xtimer_usleep(200000);
+    flip = !flip;
+  }
+}
 
 void get_player_name(game_t *dev, char *name)
 {
@@ -144,14 +220,18 @@ void game_run(game_t *dev)
     lcd_spi_draw_s(dev->display, 11, 15, dev->playername, strlen(dev->playername));
     lcd_spi_show(dev->display);
 
-    xtimer_sleep(5);
+    if (dev->state == WINNER)
+      play_winner_animation(dev);
+    else
+      play_looser_animation(dev);
   }
 }
 
-void game_init(game_t *dev, motor_controller_t *mctrl, lcd_spi_t *display, multiplexer_t *mplexer)
+void game_init(game_t *dev, motor_controller_t *mctrl, lcd_spi_t *display, multiplexer_t *mplexer, neopixel_t *led_stripe)
 {
   dev->mctrl = mctrl;
   dev->display = display;
   dev->mplexer = mplexer;
+  dev->led_stripe= led_stripe;
 }
 
