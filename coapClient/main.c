@@ -195,7 +195,7 @@ int main(void) {
     thread_create(ping_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1, 
         THREAD_CREATE_STACKTEST, ping_handler, NULL, "ping");
 
-    thread_create(coap_client_thread_stack, sizeof(coap_client_thread_stack), THREAD_PRIORITY_MAIN - 1, 
+    thread_create(coap_client_thread_stack, sizeof(coap_client_thread_stack), THREAD_PRIORITY_MAIN - 2, 
         THREAD_CREATE_STACKTEST, thread_handler, NULL, "client_thread");
 
     puts("Main: Starting shell.");

@@ -92,7 +92,6 @@ void* ping_handler(void* args) {
     printf("\n\nPing thread running\n\n\n");
     
     while(true) {
-        printf("\n\nPing thread running\n\n\n");
         ssize_t res = sock_udp_send(
             NULL,
             app_id,
