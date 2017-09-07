@@ -109,13 +109,86 @@ void int_multiplexer_receive(void *arg)
   puts("Done sending message.");
 }
 
+int hw_diag(int argc, char** argv){
+	for(int argcycl = 1; argcycl <= argc; argcycl++){
+		//motor
+		if(!strcmp(argv[argcycl], "-m")){
+			dcmotor_set_speed(&motor_a, 100);
+			dcmotor_set_speed(&motor_b, 100);
+			xtimer_sleep(3);
+			dcmotor_set_speed(&motor_a, 0);
+			dcmotor_set_speed(&motor_b, 0);
+		}
+		
+		//lcd
+		else if(!strcmp(argv[argcycl], "-l")){
+			//lcd_spi_invert(&display);
+			puts("draw Circle");
+			lcd_spi_draw_circle(&display, 50, 10, 50, true);
+			lcd_spi_show(&display);
+			xtimer_sleep(3);
+			puts("clear screen");
+			lcd_spi_clear(&display);
+			lcd_spi_show(&display);
+		}
+
+		//LEDS
+		else if(!strcmp(argv[argcycl], "-n")){
+			color_rgb_t curr_color;
+			curr_color.r = CONF_DISPLAY_BRIGHTNESS;
+			curr_color.g = CONF_DISPLAY_BRIGHTNESS;
+			curr_color.b = CONF_DISPLAY_BRIGHTNESS;
+			for(int i = 0; i < 57; i++){
+				neopixel_set_pixel_color(&led_stripe, i, curr_color);
+			}
+			neopixel_show(&led_stripe);
+			
+			xtimer_sleep(3);
+			curr_color.r = 0;
+			curr_color.g = 0;
+			curr_color.b = 0;
+			for(int i = 0; i < 55; i++){
+				neopixel_set_pixel_color(&led_stripe, i, curr_color);
+			}
+			neopixel_show(&led_stripe);
+		}
+
+		//buttons
+		else if(!strcmp(argv[argcycl], "-b")){
+			int btn;
+			char buf[10];
+			for(int i = 0; i < 8; i++){
+				lcd_spi_clear(&display);
+				while(1){
+					btn = multiplexer_receive(&multiplexer, 1);
+					if(!btn)
+						break;
+				}
+				snprintf(buf, 10, "Button: %d", i);
+				lcd_spi_draw_s(&display, 30, 30, buf, 10);
+				lcd_spi_show(&display);
+			}
+		}
+		
+		else
+			printf("usage:\thwdiag options \
+				\n-m\ttest motor 3s \
+				\n-l\tdraw circle on lcd for 3s \
+				\n-n\tlights LEDs 3s \
+				\n-b\ttest all the buttons\n");
+		return 1;
+	}
+	return 0;
+}
+
 static const shell_command_t shell_commands[] = {
+  {"hwdiag", "full hardware diagnosis", hw_diag},
   {NULL, NULL, NULL}
 };
 
 int main(void)
 {
-    int32_t act_freq;
+int32_t act_freq;
     color_rgb_t curr_color;
     printf("Welcome to Retro11.");
 
@@ -201,7 +274,7 @@ int main(void)
     /* TODO: We do not have a battery, so its always the same. :) */
     random_init(xtimer_now_usec());
 
-    thread_create(coap_server_thread_stack,
+/*    thread_create(coap_server_thread_stack,
         sizeof(coap_server_thread_stack),
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
         coap_server_thread_handler, NULL, "coap thread");
@@ -212,10 +285,11 @@ int main(void)
         sizeof(game_server_thread_stack),
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
         game_server_thread_handler, NULL, "game thread");
+*/
 
     puts("Main: Starting shell.");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
-    shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
+    shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
     puts("Main: Shell done.");
 
     return 0;
