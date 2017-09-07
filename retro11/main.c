@@ -282,11 +282,12 @@ int32_t act_freq;
     /* TODO: We do not have a battery, so its always the same. :) */
     random_init(xtimer_now_usec());
 
-    coap_client_init();
+    if (strcmp(MACHINE, "m0") == 0) {
+      coap_client_init();
+      coap_client_run();
+    }
 
-    coap_client_run();
-
-/*    thread_create(coap_server_thread_stack,
+    thread_create(coap_server_thread_stack,
         sizeof(coap_server_thread_stack),
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
         coap_server_thread_handler, NULL, "coap thread");
@@ -297,8 +298,6 @@ int32_t act_freq;
         sizeof(game_server_thread_stack),
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
         game_server_thread_handler, NULL, "game thread");
-*/
-
 
     puts("Main: Starting shell.");
     char line_buf[SHELL_DEFAULT_BUFSIZE];

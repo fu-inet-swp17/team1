@@ -100,6 +100,8 @@ const coap_resource_t coap_resources[] = {
     {"/se-app/entries", COAP_GET, &entry_handler}
 };
 
+const unsigned coap_resources_numof = sizeof(coap_resources) / sizeof(coap_resources[0]);
+
 gcoap_listener_t coap_listener = {
     (coap_resource_t *)&coap_resources,
     sizeof(coap_resources) / sizeof(coap_resources[0]),
@@ -107,6 +109,7 @@ gcoap_listener_t coap_listener = {
 };
 
 char coap_client_thread_stack[THREAD_STACKSIZE_DEFAULT];
+char ping_stack[THREAD_STACKSIZE_DEFAULT];
 
 void set_name(char * name, int m) {
   if (m == 0){
@@ -354,10 +357,54 @@ void *coap_client_thread_handler(void *arg) {
   return NULL;
 }
 
+void* ping_handler(void* args) {
+  (void)args;
+  sock_udp_ep_t remote = SOCK_IPV6_EP_ANY;
+  remote.port = SERVER_CONN_PORT;
+  ipv6_addr_from_str((ipv6_addr_t *)&remote.addr.ipv6, "ff02::1");
+
+  printf("\n\nPing thread running\n\n\n");
+
+  while(true) {
+    printf("\n\nPing thread running\n\n\n");
+    ssize_t res = sock_udp_send(
+      NULL,
+      app_id,
+      APP_ID_LEN,
+      &remote
+    );
+
+    if(res == -EAFNOSUPPORT) {
+      fputs("Ping: EAFNOSUPPORT", stderr);
+    } else if(res == -EHOSTUNREACH) {
+      fputs("Ping: EHOSTUNREACH", stderr);
+    } else if(res == -EINVAL) {
+      fputs("Ping: EINVAL", stderr);
+    } else if(res == -ENOMEM) {
+      fputs("Ping: ENOMEM", stderr);
+    } else if(res == -ENOTCONN) {
+      fputs("Ping: ENOTCONN", stderr);
+    } else if(res < 0) {
+      fprintf(stderr, "Ping error: %d\n", res);
+    }
+
+    if(res < 0) {
+        break;
+    } else {
+        xtimer_sleep(PING_TIMEOUT);
+    }
+  }
+
+  puts("ping thread terminating!");
+
+  return NULL;
+}
 
 void coap_client_init(void)
 {
   gcoap_register_listener(&coap_listener);
+  thread_create(ping_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1,
+    THREAD_CREATE_STACKTEST, ping_handler, NULL, "ping");
 }
 
 kernel_pid_t coap_client_run(void)
