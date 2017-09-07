@@ -31,6 +31,9 @@
 #include "net/netdev.h"
 #include "net/netopt.h"
 
+// Coap Client
+#include "coap_client.h"
+
 #define MAIN_QUEUE_SIZE     (8)
 #define COAP_INBUF_SIZE (256U)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
@@ -45,6 +48,8 @@ game_t game;
 volatile bool enableBtns = false;
 char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT + 1024];
 char game_server_thread_stack[THREAD_STACKSIZE_DEFAULT];
+
+char own_addr[IPV6_ADDR_MAX_STR_LEN];
 
 extern int _netif_config(int argc, char **argv);
 
@@ -123,7 +128,7 @@ int hw_diag(int argc, char** argv){
 			dcmotor_set_speed(&motor_a, 0);
 			dcmotor_set_speed(&motor_b, 0);
 		}
-		
+
 		//lcd
 		else if(!strcmp(argv[argcycl], "-l")){
 			//lcd_spi_invert(&display);
@@ -146,7 +151,7 @@ int hw_diag(int argc, char** argv){
 				neopixel_set_pixel_color(&led_stripe, i, curr_color);
 			}
 			neopixel_show(&led_stripe);
-			
+
 			xtimer_sleep(3);
 			curr_color.r = 0;
 			curr_color.g = 0;
@@ -173,7 +178,7 @@ int hw_diag(int argc, char** argv){
 				lcd_spi_show(&display);
 			}
 		}
-		
+
 		else
 			printf("usage:\thwdiag options \
 				\n-m\ttest motor 3s \
@@ -201,7 +206,6 @@ int32_t act_freq;
     kernel_pid_t dev;
     kernel_pid_t ifs[GNRC_NETIF_NUMOF];
     size_t numof = gnrc_netif_get(ifs);
-
 
     dev = ifs[numof-1];
 
@@ -278,6 +282,10 @@ int32_t act_freq;
     /* TODO: We do not have a battery, so its always the same. :) */
     random_init(xtimer_now_usec());
 
+    coap_client_init();
+
+    coap_client_run();
+
 /*    thread_create(coap_server_thread_stack,
         sizeof(coap_server_thread_stack),
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
@@ -290,6 +298,7 @@ int32_t act_freq;
         THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
         game_server_thread_handler, NULL, "game thread");
 */
+
 
     puts("Main: Starting shell.");
     char line_buf[SHELL_DEFAULT_BUFSIZE];

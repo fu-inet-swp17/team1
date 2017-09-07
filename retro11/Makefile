@@ -23,8 +23,13 @@ USEMODULE += random
 
 #Coap Server pkgs and mdoules
 USEPKG += nanocoap
+USEPKG += jsmn
 
 USEMODULE += ipv6_addr
+USEMODULE += fmt
+USEMODULE += od
+USEMODULE += saul_default
+USEMODULE += gcoap
 # Include packages that pull up and auto-init the link layer.
 # NOTE: 6LoWPAN will be included if IEEE802.15.4 devices are present
 USEMODULE += gnrc_netdev_default
