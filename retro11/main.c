@@ -30,6 +30,7 @@
 #include "net/netopt.h"
 
 #define MAIN_QUEUE_SIZE     (8)
+#define COAP_INBUF_SIZE (256U)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 
 dcmotor_t motor_a, motor_b;
@@ -43,13 +44,14 @@ volatile bool enableBtns = false;
 char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT + 1024];
 char game_server_thread_stack[THREAD_STACKSIZE_DEFAULT];
 
-void microcoap_server_loop(void);
 extern int _netif_config(int argc, char **argv);
 
 void *coap_server_thread_handler(void *arg)
 {
   puts("Starting network server.");
-  microcoap_server_loop();
+  uint8_t buf[COAP_INBUF_SIZE];
+  sock_udp_ep_t local = { .port=COAP_PORT, .family=AF_INET6 };
+  nanocoap_server(&local, buf, sizeof(buf));
   puts("NetworkServer done.");
 
   return NULL;

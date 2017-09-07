@@ -22,7 +22,7 @@ USEMODULE += shell_commands
 USEMODULE += random
 
 #Coap Server pkgs and mdoules
-USEPKG += microcoap
+USEPKG += nanocoap
 
 USEMODULE += ipv6_addr
 # Include packages that pull up and auto-init the link layer.
