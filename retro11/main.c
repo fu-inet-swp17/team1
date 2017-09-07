@@ -17,7 +17,6 @@
 #include "lcd_spi.h"
 
 //coap Server
-#include "machine.h"
 #include "msg.h"
 #include "shell.h"
 #include "net/fib.h"

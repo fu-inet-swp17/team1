@@ -1,11 +1,6 @@
 #ifndef RETRO11_CONF_H
 #define RETRO11_CONF_H
 
-//#define MACHINE "m0" //insert machine identifier
-#define RESULT ".re"
-#define NAME ".na"
-#define START ".st"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -67,6 +62,11 @@ extern "C" {
 #define CONF_DISPLAY_LED1         (56)
 #define CONF_DISPLAY_LED2         (55)
 /** @} */
+
+// #define MACHINE "m0" //insert machine identifier
+#define RESULT ".re"
+#define NAME ".na"
+#define START ".st"
 
 #ifdef __cplusplus
 }
