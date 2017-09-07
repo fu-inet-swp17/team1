@@ -1,7 +1,7 @@
 # Retro11 - Playing with PDP11
 
 The idea of this project is to use the existing tape hardware of the PDP11, fuse
-itwith a modern microcontroller, add some LCD/LED sugar on top of it and build
+it with a modern microcontroller, add some LCD/LED sugar on top of it and build
 an open gaming platform. The hardware is naturally very limited but still
 provides clonky feeling of 50 year old PDP11.
 
