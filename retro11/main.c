@@ -17,6 +17,8 @@
 #include "lcd_spi.h"
 
 //coap Server
+#include "nanocoap.h"
+#include "nanocoap_sock.h"
 #include "msg.h"
 #include "shell.h"
 #include "net/fib.h"
