@@ -64,6 +64,7 @@ extern "C" {
 /** @} */
 
 //#define MACHINE "M0" //insert machine identifier
+
 #define RESULT ".re"
 #define NAME ".na"
 #define START ".st"
