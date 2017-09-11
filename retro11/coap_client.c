@@ -5,13 +5,14 @@
 #include "fmt.h"
 #include "saul_reg.h"
 #include "senml.h"
-#include "smart_environment.h"
+#include "net/ipv6/addr.h"
+#include "net/gnrc/ipv6/netif.h"
 
 /* Board addresses */
-static char M0_ADDR[] = "ff02::1:a0:a0";
+static char M0_ADDR[IPV6_ADDR_MAX_STR_LEN];
 static char M1_ADDR[] = "ff02::1:b1:b1";
 
-/* Board variables */
+/* Board status variables */
 static char * M0_name = "";
 static char * M1_name = "";
 static int M0_has_name = 0;
@@ -28,8 +29,9 @@ int entry_counter = 0;
 char * nameslist[50];
 int resultslist[50];
 
-int8_t senml_json_strout(char* json_buf, uint8_t dev_type)
-{
+char coap_client_thread_stack[THREAD_STACKSIZE_DEFAULT];
+
+int8_t senml_json_strout(char* json_buf, uint8_t dev_type) {
   (void)dev_type;
 
   char *dev_name = "reaction_game";
@@ -60,8 +62,8 @@ int8_t senml_json_strout(char* json_buf, uint8_t dev_type)
   return 0;
 }
 
-ssize_t senml_json_send(coap_pkt_t* pdu, uint8_t *buf, size_t len, uint8_t dev_type)
-{
+ssize_t senml_json_send(coap_pkt_t* pdu, uint8_t *buf, size_t len, uint8_t dev_type) {
+
   gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
 
   char* json_buf = malloc(SENML_LEN);
@@ -95,21 +97,6 @@ ssize_t senml_json_send(coap_pkt_t* pdu, uint8_t *buf, size_t len, uint8_t dev_t
 ssize_t entry_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len) {
   return senml_json_send(pdu, buf, len, SAUL_CLASS_UNDEF);
 }
-
-const coap_resource_t coap_resources[] = {
-    {"/se-app/entries", COAP_GET, &entry_handler}
-};
-
-const unsigned coap_resources_numof = sizeof(coap_resources) / sizeof(coap_resources[0]);
-
-gcoap_listener_t coap_listener = {
-    (coap_resource_t *)&coap_resources,
-    sizeof(coap_resources) / sizeof(coap_resources[0]),
-    NULL
-};
-
-char coap_client_thread_stack[THREAD_STACKSIZE_DEFAULT];
-char ping_stack[THREAD_STACKSIZE_DEFAULT];
 
 void set_name(char * name, int m) {
   if (m == 0){
@@ -148,8 +135,8 @@ void set_result(char * result, int m) {
 /*
  * Response callback.
  */
-static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *remote)
-{
+static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *remote) {
+
   (void)remote;       /* not interested in the source currently */
 
   if (req_state == GCOAP_MEMO_TIMEOUT) {
@@ -246,36 +233,19 @@ static size_t _send(uint8_t *buf, size_t len, char *addr_str, char *port_str) {
   return bytes_sent;
 }
 
-int gcoap_cli_cmd(int argc, char **argv) {
-  char *method_codes[] = {"get", "post", "put"};
+void gcoap_req_cmd(char **argv) {
   uint8_t buf[GCOAP_PDU_BUF_SIZE];
   coap_pkt_t pdu;
   size_t len;
 
-  if (argc == 1)
-    return 1;
+  len = gcoap_request(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, 1, argv[4]);
+  printf("gcoap_cli: sending msg ID %u, %u bytes\nRequested ressource: %s\n", coap_get_id(&pdu), (unsigned) len, argv[4]);
 
-  for (size_t i = 0; i < sizeof(method_codes) / sizeof(char*); i++) {
-    if (strcmp(argv[1], method_codes[i]) == 0) {
-      len = gcoap_request(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, i+1, argv[4]);
-      printf("gcoap_cli: sending msg ID %u, %u bytes\nRequested ressource: %s\n", coap_get_id(&pdu), (unsigned) len, argv[4]);
-
-      if (!_send(&buf[0], len, argv[2], argv[3]))
-          puts("gcoap_cli: msg send failed");
-
-      return 0;
-    }
-  }
-
-  return 1;
+  if (!_send(&buf[0], len, argv[2], argv[3]))
+    puts("gcoap_cli: msg send failed");
 }
 
-void *coap_client_thread_handler(void *arg) {
-  (void) arg;
-
-  while (1) {
-    if (restart_counter > 40) {
-      printf("\n\nNo answer received, resetting machine status\n\n\n");
+void reset_status_variables(void) {
 
       M0_name = "";
       M1_name = "";
@@ -288,66 +258,69 @@ void *coap_client_thread_handler(void *arg) {
       M0_rcvd_result = 0;
       M1_rcvd_result = 0;
       restart_counter = 0;
-      xtimer_sleep(4);
-    } else {
+}
+
+void set_entry_counter(void) {
+  nameslist[entry_counter] = M0_name;
+  nameslist[entry_counter+1] = M1_name;
+  resultslist[entry_counter] = atoi(M0_result);
+  resultslist[entry_counter+1] = atoi(M1_result);
+  entry_counter += 2;
+
+  if (entry_counter >= 48){
+    entry_counter = 0;
+  }
+}
+
+void *coap_client_thread_handler(void *arg) {
+  (void) arg;
+
+  while (1) {
+    if (restart_counter > 40) {
+      printf("\n\nNo answer received, resetting machine status\n\n\n");
+      reset_status_variables();
+      xtimer_sleep(2);
+    } else { //fragt nach den Spielernamen beider Maschinen
       if (M0_has_name == 0 || M1_has_name == 0) {
         char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/name"};
-        gcoap_cli_cmd(5, message1);
+        gcoap_req_cmd(message1);
         char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/name"};
-        gcoap_cli_cmd(5, message2);
-        xtimer_sleep(2);
-      } else {
+        gcoap_req_cmd(message2);
+        xtimer_sleep(1);
+      } else { //nach erhalt der Namen, befiehlt beiden Maschinen das Spiel zu starten
         if (M0_is_working == 0 || M1_is_working == 0) {
           char * message1[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
-          gcoap_cli_cmd(5, message1);
+          gcoap_req_cmd(message1);
           char * message2[] = {"coap", "get", M1_ADDR, "5683", "/start/game"};
-          gcoap_cli_cmd(5, message2);
-          xtimer_sleep(2);
-        } else {
+          gcoap_req_cmd(message2);
+          xtimer_sleep(1);
+        } else { //nach Spielstart, fragt nach Spiel-Resultaten beider Maschinen
           if (M0_rcvd_result == 0 || M1_rcvd_result == 0) {
             restart_counter += 1;
             char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/result"};
-            gcoap_cli_cmd(5, message1);
+            gcoap_req_cmd(message1);
             char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/result"};
-            gcoap_cli_cmd(5, message2);
-            xtimer_sleep(2);
-          } else {
-            xtimer_sleep(3);
+            gcoap_req_cmd(message2);
+            xtimer_sleep(1);
+          } else { //nach erhalt der Ergebnisse, ermittelt Sieger/Verlierer und teilt den Maschinen ihre Rolle mit
+            xtimer_sleep(1);
             if (atol(M0_result) < atol(M1_result)) {
               char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/winner"};
-              gcoap_cli_cmd(5, message1);
+              gcoap_req_cmd(message1);
               char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/looser"};
-              gcoap_cli_cmd(5, message2);
+              gcoap_req_cmd(message2);
             } else if (atol(M0_result) > atol(M1_result)) {
               char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/looser"};
-              gcoap_cli_cmd(5, message1);
+              gcoap_req_cmd(message1);
               char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/winner"};
-              gcoap_cli_cmd(5, message2);
+              gcoap_req_cmd(message2);
             }
             printf("\n\nResetting machine status\n\n\n");
 
-            nameslist[entry_counter] = M0_name;
-            nameslist[entry_counter+1] = M1_name;
-            resultslist[entry_counter] = atoi(M0_result);
-            resultslist[entry_counter+1] = atoi(M1_result);
-            entry_counter += 2;
+            set_entry_counter();
+            reset_status_variables();
 
-            if (entry_counter >= 48){
-                entry_counter = 0;
-            }
-
-            M0_name = "";
-            M1_name = "";
-            M0_has_name = 0;
-            M1_has_name = 0;
-            M0_is_working = 0;
-            M1_is_working = 0;
-            M0_result = "";
-            M1_result = "";
-            M0_rcvd_result = 0;
-            M1_rcvd_result = 0;
-            restart_counter = 0;
-            xtimer_sleep(4);
+            xtimer_sleep(2);
           }
         }
       }
@@ -357,58 +330,16 @@ void *coap_client_thread_handler(void *arg) {
   return NULL;
 }
 
-void* ping_handler(void* args) {
-  (void)args;
-  sock_udp_ep_t remote = SOCK_IPV6_EP_ANY;
-  remote.port = SERVER_CONN_PORT;
-  ipv6_addr_from_str((ipv6_addr_t *)&remote.addr.ipv6, "ff02::1");
+kernel_pid_t coap_client_init(void) {
 
-  printf("\n\nPing thread running\n\n\n");
+  ipv6_addr_t addr;
+  ipv6_addr_from_str(&addr, "fe80::");
 
-  while(true) {
-    printf("\n\nPing thread running\n\n\n");
-    ssize_t res = sock_udp_send(
-      NULL,
-      app_id,
-      APP_ID_LEN,
-      &remote
-    );
+  ipv6_addr_t* out = NULL;
+  gnrc_ipv6_netif_find_by_prefix(&out, &addr);
+    
+  ipv6_addr_to_str(M0_ADDR, out, IPV6_ADDR_MAX_STR_LEN);
 
-    if(res == -EAFNOSUPPORT) {
-      fputs("Ping: EAFNOSUPPORT", stderr);
-    } else if(res == -EHOSTUNREACH) {
-      fputs("Ping: EHOSTUNREACH", stderr);
-    } else if(res == -EINVAL) {
-      fputs("Ping: EINVAL", stderr);
-    } else if(res == -ENOMEM) {
-      fputs("Ping: ENOMEM", stderr);
-    } else if(res == -ENOTCONN) {
-      fputs("Ping: ENOTCONN", stderr);
-    } else if(res < 0) {
-      fprintf(stderr, "Ping error: %d\n", res);
-    }
-
-    if(res < 0) {
-        break;
-    } else {
-        xtimer_sleep(PING_TIMEOUT);
-    }
-  }
-
-  puts("ping thread terminating!");
-
-  return NULL;
-}
-
-void coap_client_init(void)
-{
-  gcoap_register_listener(&coap_listener);
-  thread_create(ping_stack, THREAD_STACKSIZE_DEFAULT, THREAD_PRIORITY_MAIN - 1,
-    THREAD_CREATE_STACKTEST, ping_handler, NULL, "ping");
-}
-
-kernel_pid_t coap_client_run(void)
-{
   return thread_create(coap_client_thread_stack, sizeof(coap_client_thread_stack),
       THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
       coap_client_thread_handler, NULL, "coap_client thread");

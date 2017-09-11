@@ -16,11 +16,10 @@
 extern "C" {
 #endif
 
-#define PING_TIMEOUT	60
 #define SENML_LEN       75
 
-void coap_client_init(void);
-kernel_pid_t coap_client_run(void);
+kernel_pid_t coap_client_init(void);
+void coap_server_init(void);
 
 #ifdef __cplusplus
 }

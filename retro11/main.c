@@ -17,8 +17,6 @@
 #include "lcd_spi.h"
 
 //coap Server
-#include "nanocoap.h"
-#include "nanocoap_sock.h"
 #include "msg.h"
 #include "shell.h"
 #include "net/fib.h"
@@ -49,20 +47,7 @@ volatile bool enableBtns = false;
 char coap_server_thread_stack[THREAD_STACKSIZE_DEFAULT + 1024];
 char game_server_thread_stack[THREAD_STACKSIZE_DEFAULT];
 
-char own_addr[IPV6_ADDR_MAX_STR_LEN];
-
 extern int _netif_config(int argc, char **argv);
-
-void *coap_server_thread_handler(void *arg)
-{
-  puts("Starting network server.");
-  uint8_t buf[COAP_INBUF_SIZE];
-  sock_udp_ep_t local = { .port=COAP_PORT, .family=AF_INET6 };
-  nanocoap_server(&local, buf, sizeof(buf));
-  puts("NetworkServer done.");
-
-  return NULL;
-}
 
 void *game_server_thread_handler(void *arg)
 {
@@ -210,7 +195,7 @@ int32_t act_freq;
     dev = ifs[numof-1];
 
     ipv6_addr_t addr;
-    if ( strcmp(MACHINE, "m0") == 0 ) {
+    if ( strcmp(MACHINE, "M0") == 0 ) {
       ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
     }
     else {
@@ -282,15 +267,12 @@ int32_t act_freq;
     /* TODO: We do not have a battery, so its always the same. :) */
     random_init(xtimer_now_usec());
 
-    if (strcmp(MACHINE, "m0") == 0) {
+
+   if (!strcmp(MACHINE, "M0")) {
       coap_client_init();
-      coap_client_run();
     }
 
-    thread_create(coap_server_thread_stack,
-        sizeof(coap_server_thread_stack),
-        THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
-        coap_server_thread_handler, NULL, "coap thread");
+    coap_server_init();
 
     game_init(&game, &motor_controller, &display, &multiplexer, &led_stripe);
 

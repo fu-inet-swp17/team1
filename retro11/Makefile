@@ -21,10 +21,8 @@ USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += random
 
-#Coap Server pkgs and mdoules
-USEPKG += nanocoap
+#Coap Server/Client pkgs and modules
 USEPKG += jsmn
-
 USEMODULE += ipv6_addr
 USEMODULE += fmt
 USEMODULE += od
