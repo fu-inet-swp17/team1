@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 #define SENML_LEN       75
-#define TIMER 		25000 //timer for client_thread sleep commands, used to reduce communication
+#define TIMER 		20000 //timer for client_thread sleep commands, used to reduce communication
 
 kernel_pid_t coap_client_init(void);
 void coap_server_init(void);

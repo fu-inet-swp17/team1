@@ -132,14 +132,14 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
     return;
   }
 
-  //char *class_str = (coap_get_code_class(pdu) == COAP_CLASS_SUCCESS) ? "Success" : "Error";
-  //printf("gcoap: response %s, code %1u.%02u", class_str, coap_get_code_class(pdu), coap_get_code_detail(pdu));
+  char *class_str = (coap_get_code_class(pdu) == COAP_CLASS_SUCCESS) ? "Success" : "Error";
+  printf("gcoap: response %s, code %1u.%02u", class_str, coap_get_code_class(pdu), coap_get_code_detail(pdu));
 
   if (pdu->payload_len) {
     if (pdu->content_type == COAP_FORMAT_TEXT) {
 
       /* Expecting diagnostic payload in failure cases */
-      //printf(", %u bytes\nResponse from Server: %.*s\n", pdu->payload_len, pdu->payload_len, (char *)pdu->payload);
+      printf(", %u bytes\nResponse from Server: %.*s\n", pdu->payload_len, pdu->payload_len, (char *)pdu->payload);
 
 
      //evaulates received message payload of format MACHINE.SUBJECT.VALUE
@@ -160,7 +160,7 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
       } else if (strcmp(machine, "M1.") == 0) {
         m = 1;
       } else { //leave message evaluation if machine is neither M0 or M1
-        //printf("%.*s\n", pdu->payload_len, (char *)pdu->payload);
+        printf("%.*s\n", pdu->payload_len, (char *)pdu->payload);
         return;
       }
       //if subject is st, set machine states to working
@@ -183,6 +183,8 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
       }
     } 
   } else {
+    printf(", %u bytes\n", pdu->payload_len);
+    od_hex_dump(pdu->payload, pdu->payload_len, OD_WIDTH_DEFAULT);
     //ignore messages not following the format
     return;
   }
@@ -220,11 +222,11 @@ void gcoap_req_cmd(char **argv) {
   size_t len;
 
   len = gcoap_request(&pdu, &buf[0], GCOAP_PDU_BUF_SIZE, 1, argv[4]);
-  //printf("gcoap_cli: sending msg ID %u, %u bytes\nRequested ressource: %s\n", coap_get_id(&pdu), (unsigned) len, argv[4]);
+  printf("gcoap_cli: sending msg ID %u, %u bytes\nRequested ressource: %s\n", coap_get_id(&pdu), (unsigned) len, argv[4]);
 
   _send(&buf[0], len, argv[2], argv[3]);
-/*  if (!_send(&buf[0], len, argv[2], argv[3]))
-    puts("gcoap_cli: msg send failed");*/
+  if (!_send(&buf[0], len, argv[2], argv[3]))
+    puts("gcoap_cli: msg send failed");
 }
 
 void reset_client_states(void) {
@@ -253,7 +255,7 @@ void *coap_client_thread_handler(void *arg) {
   (void) arg;
 
   while (1) {  
-  if (client.M0_state == WAITING || client.M0_state == WAITING ) {
+  if (client.M0_state == WAITING || client.M1_state == WAITING ) {
     xtimer_usleep(TIMER);
     char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/name"};
     char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/name"};
@@ -261,6 +263,7 @@ void *coap_client_thread_handler(void *arg) {
     gcoap_req_cmd(message2);
   }
   else if (client.M0_state == HAS_NAME && client.M1_state == HAS_NAME) {
+    xtimer_usleep(TIMER);
     char * message1[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
     char * message2[] = {"coap", "get", M1_ADDR, "5683", "/start/game"};
     gcoap_req_cmd(message1);

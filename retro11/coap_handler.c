@@ -88,10 +88,10 @@ static ssize_t _set_looser_handler(coap_pkt_t *pdu, uint8_t *buf, size_t len)
 const coap_resource_t coap_resources[] = {
     COAP_WELL_KNOWN_CORE_DEFAULT_HANDLER,
     { "/request/name", COAP_GET, _request_name_handler },
-    { "/start/game", COAP_GET, _start_game_handler },
     { "/request/result", COAP_GET, _request_result_handler },
-    { "/set/winner", COAP_GET, _set_winner_handler },
     { "/set/looser", COAP_GET, _set_looser_handler },
+    { "/set/winner", COAP_GET, _set_winner_handler },
+    { "/start/game", COAP_GET, _start_game_handler },
     { "/se-app/entries", COAP_GET, &entry_handler}
 };
 
