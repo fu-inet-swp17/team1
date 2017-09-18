@@ -83,7 +83,7 @@ ssize_t entry_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len) {
 }
 
 //sets name state after message evaluation in response handler
-void set_name(char * name, client_t m) {
+void set_name(char * name, int m) {
   if (m == 0){
     client.M0_name = name;
     client.M0_state = HAS_NAME;
@@ -121,14 +121,12 @@ void set_result(char * result, int m) {
 
 //response handler, handles coap responses
 static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *remote) {
-
   (void)remote;
 
   if (req_state == GCOAP_MEMO_TIMEOUT) {
     //printf("gcoap: timeout for msg ID %02u\n", coap_get_id(pdu));
     return;
   }
-
   if (req_state == GCOAP_MEMO_ERR) {
     //printf("gcoap: error in response\n");
     return;
@@ -138,24 +136,24 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
   //printf("gcoap: response %s, code %1u.%02u", class_str, coap_get_code_class(pdu), coap_get_code_detail(pdu));
 
   if (pdu->payload_len) {
-    if (pdu->content_type == COAP_FORMAT_TEXT || pdu->content_type == COAP_FORMAT_LINK
-            || coap_get_code_class(pdu) == COAP_CLASS_CLIENT_FAILURE
-            || coap_get_code_class(pdu) == COAP_CLASS_SERVER_FAILURE) {
+    if (pdu->content_type == COAP_FORMAT_TEXT) {
 
       /* Expecting diagnostic payload in failure cases */
       //printf(", %u bytes\nResponse from Server: %.*s\n", pdu->payload_len, pdu->payload_len, (char *)pdu->payload);
 
+
+     //evaulates received message payload of format MACHINE.SUBJECT.VALUE
+
+      //seperate machine and the rest of the payload
       char machine[4];
       int pldlen = pdu->payload_len-3;
       char pld[pldlen];
-
       strncpy(machine, (char *)pdu->payload, 3);
       machine[3]='\0';
-
       strncpy(pld, (char *)pdu->payload + 3, pldlen);
       pld [pldlen] = '\0';
 
-      //evaulates received message of format MACHINE.SUBJECT.VALUE
+      //set m for calls of set_ functions
       int m;
       if (strcmp(machine, "M0.") == 0) {
         m = 0;
@@ -183,13 +181,10 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
         result [pldlen-3] = '\0';
         set_result(result,m);
       }
-    } else {
-      //if message has different format, print payload
-      //printf(", %u bytes\n", pdu->payload_len);
-      od_hex_dump(pdu->payload, pdu->payload_len, OD_WIDTH_DEFAULT);
-    }
+    } 
   } else {
-    //printf(", empty payload\n");
+    //ignore messages not following the format
+    return;
   }
 }
 
@@ -265,7 +260,7 @@ void *coap_client_thread_handler(void *arg) {
     gcoap_req_cmd(message1);
     gcoap_req_cmd(message2);
   }
-  else if (client.M0_state == HAS_NAME || client.M1_state == HAS_NAME) {
+  else if (client.M0_state == HAS_NAME && client.M1_state == HAS_NAME) {
     char * message1[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
     char * message2[] = {"coap", "get", M1_ADDR, "5683", "/start/game"};
     gcoap_req_cmd(message1);
@@ -278,7 +273,7 @@ void *coap_client_thread_handler(void *arg) {
     gcoap_req_cmd(message1);
     gcoap_req_cmd(message2);
   }
-  else if (client.M0_state == RCVD_RESULT || client.M1_state == RCVD_RESULT) {
+  else if (client.M0_state == RCVD_RESULT && client.M1_state == RCVD_RESULT) {
     if (atol(client.M0_result) < atol(client.M1_result)) {
       xtimer_usleep(TIMER);  
       char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/winner"};
