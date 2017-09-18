@@ -22,6 +22,22 @@ extern "C" {
 kernel_pid_t coap_client_init(void);
 void coap_server_init(void);
 
+typedef enum {
+	WAITING,
+	HAS_NAME,
+	IS_WORKING,
+	RCVD_RESULT
+} client_state_t;
+
+typedef struct {
+	char * M0_name;
+	char * M1_name;
+	char * M0_result; 
+	char * M1_result;
+	client_state_t M0_state;
+	client_state_t M1_state;
+} client_t;
+
 #ifdef __cplusplus
 }
 #endif

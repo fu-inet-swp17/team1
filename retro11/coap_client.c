@@ -13,16 +13,7 @@ static char M0_ADDR[IPV6_ADDR_MAX_STR_LEN];
 static char M1_ADDR[] = "ff02::1:b1:b1";
 
 /* Board status variables */
-static char * M0_name = "";
-static char * M1_name = "";
-static int M0_has_name = 0;
-static int M1_has_name = 0;
-static int M0_is_working = 0;
-static int M1_is_working = 0;
-static char * M0_result = "";
-static char * M1_result = "";
-static int M0_rcvd_result = 0;
-static int M1_rcvd_result = 0;
+client_t client;
 
 int entry_counter = 0;
 char * nameslist[50];
@@ -99,34 +90,34 @@ ssize_t entry_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len) {
 
 void set_name(char * name, int m) {
   if (m == 0){
-    M0_name = name;
-    M0_has_name = 1;
+    client.M0_name = name;
+    client.M0_state = HAS_NAME;
     printf("M0 Name: %s\n", name);
   } else {
-    M1_name = name;
-    M1_has_name = 1;
+    client.M1_name = name;
+    client.M1_state = HAS_NAME;
     printf("M1 Name: %s\n", name);
   }
 }
 
 void set_is_working(int m) {
   if (m == 0){
-    M0_is_working = 1;
+    client.M0_state = IS_WORKING;
     printf("M0 Started\n");
   } else {
-    M1_is_working = 1;
+    client.M1_state = IS_WORKING;
     printf("M1 Started\n");
   }
 }
 
 void set_result(char * result, int m) {
   if (m == 0){
-    M0_result = result;
-    M0_rcvd_result = 1;
+    client.M0_result = result;
+    client.M0_state = RCVD_RESULT;
     printf("M0 Result = %s\n", result);
   } else {
-    M1_result = result;
-    M1_rcvd_result = 1;
+    client.M1_result = result;
+    client.M1_state = RCVD_RESULT;
     printf("M1 Result = %s\n", result);
   }
 }
@@ -245,25 +236,20 @@ void gcoap_req_cmd(char **argv) {
     puts("gcoap_cli: msg send failed");*/
 }
 
-void reset_status_variables(void) {
-
-      M0_name = "";
-      M1_name = "";
-      M0_has_name = 0;
-      M1_has_name = 0;
-      M0_is_working = 0;
-      M1_is_working = 0;
-      M0_result = "";
-      M1_result = "";
-      M0_rcvd_result = 0;
-      M1_rcvd_result = 0;
+void reset_client_states(void) {
+  client.M0_state = WAITING;
+  client.M1_state = WAITING;
+  client.M0_name = "";
+  client.M1_name = "";
+  client.M0_result = ""; 
+  client.M1_result = "";
 }
 
 void set_entry_counter(void) {
-  nameslist[entry_counter] = M0_name;
-  nameslist[entry_counter+1] = M1_name;
-  resultslist[entry_counter] = atoi(M0_result);
-  resultslist[entry_counter+1] = atoi(M1_result);
+  nameslist[entry_counter] = client.M0_name;
+  nameslist[entry_counter+1] = client.M1_name;
+  resultslist[entry_counter] = atoi(client.M0_result);
+  resultslist[entry_counter+1] = atoi(client.M1_result);
   entry_counter += 2;
 
   if (entry_counter >= 48){
@@ -274,52 +260,49 @@ void set_entry_counter(void) {
 void *coap_client_thread_handler(void *arg) {
   (void) arg;
 
-  while (1) {
-    //fragt nach den Spielernamen beider Maschinen
-    if (M0_has_name == 0 || M1_has_name == 0) {
-      xtimer_usleep(TIMER);
-      char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/name"};
-      gcoap_req_cmd(message1);
-      char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/name"};
-      gcoap_req_cmd(message2);
-      } else { //nach erhalt der Namen, befiehlt beiden Maschinen das Spiel zu starten
-        if (M0_is_working == 0 || M1_is_working == 0) {
-          xtimer_usleep(TIMER);
-          char * message1[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
-          gcoap_req_cmd(message1);
-          char * message2[] = {"coap", "get", M1_ADDR, "5683", "/start/game"};
-          gcoap_req_cmd(message2);          
-        } else { //nach Spielstart, fragt nach Spiel-Resultaten beider Maschinen
-          if (M0_rcvd_result == 0 || M1_rcvd_result == 0) {
-            xtimer_usleep(TIMER);
-            char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/result"};
-            gcoap_req_cmd(message1);
-            char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/result"};
-            gcoap_req_cmd(message2);
-          } else { //nach erhalt der Ergebnisse, ermittelt Sieger/Verlierer und teilt den Maschinen ihre Rolle mit
-            if (atol(M0_result) < atol(M1_result)) {
-              char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/winner"};
-              gcoap_req_cmd(message1);
-              char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/looser"};
-              gcoap_req_cmd(message2);
-            } else {
-              if (atol(M0_result) > atol(M1_result)) {
-              char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/looser"};
-              gcoap_req_cmd(message1);
-              char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/winner"};
-              gcoap_req_cmd(message2);
-            }
-            printf("\n\nResetting machine status\n\n\n");
-
-            set_entry_counter();
-            reset_status_variables();
-
-            xtimer_usleep(TIMER);    
-          }      
-        }
-      }
-    }
+  while (1) {  
+  if (client.M0_state == WAITING || client.M0_state == WAITING ) {
+    xtimer_usleep(TIMER);
+    char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/name"};
+    char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/name"};
+    gcoap_req_cmd(message1);
+    gcoap_req_cmd(message2);
   }
+  else if (client.M0_state == HAS_NAME || client.M1_state == HAS_NAME) {
+    char * message1[] = {"coap", "get", M0_ADDR, "5683", "/start/game"};
+    char * message2[] = {"coap", "get", M1_ADDR, "5683", "/start/game"};
+    gcoap_req_cmd(message1);
+    gcoap_req_cmd(message2);           
+  }
+  else if (client.M0_state == IS_WORKING || client.M1_state == IS_WORKING) {
+    xtimer_usleep(TIMER);
+    char * message1[] = {"coap", "get", M0_ADDR, "5683", "/request/result"};
+    char * message2[] = {"coap", "get", M1_ADDR, "5683", "/request/result"};
+    gcoap_req_cmd(message1);
+    gcoap_req_cmd(message2);
+  }
+  else if (client.M0_state == RCVD_RESULT || client.M1_state == RCVD_RESULT) {
+    if (atol(client.M0_result) < atol(client.M1_result)) {
+      xtimer_usleep(TIMER);  
+      char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/winner"};
+      char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/looser"};
+      gcoap_req_cmd(message1);
+      gcoap_req_cmd(message2);
+    } 
+    else if (atol(client.M0_result) > atol(client.M1_result)) {
+        xtimer_usleep(TIMER);  
+        char * message1[] = {"coap", "get", M0_ADDR, "5683", "/set/looser"};
+        char * message2[] = {"coap", "get", M1_ADDR, "5683", "/set/winner"};
+        gcoap_req_cmd(message1);
+        gcoap_req_cmd(message2);
+      }
+  printf("\n\nResetting machine status\n\n\n");
+
+  set_entry_counter();
+  reset_client_states();
+  xtimer_usleep(TIMER);  
+  }  
+}
 
   return NULL;
 }
@@ -335,6 +318,8 @@ kernel_pid_t coap_client_init(void) {
   ipv6_addr_to_str(M0_ADDR, out, IPV6_ADDR_MAX_STR_LEN);
 
   puts(M0_ADDR);
+
+  reset_client_states();
 
   return thread_create(coap_client_thread_stack, sizeof(coap_client_thread_stack),
       THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,

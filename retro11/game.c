@@ -19,7 +19,7 @@
 #define LED_DISTANCE (2U)
 
 extern bool enableBtns;
-extern void reset_status_variables(void);
+extern void reset_client_states(void);
 
 void play_winner_animation(game_t *dev)
 {
@@ -189,7 +189,7 @@ void game_run(game_t *dev)
     if (xtimer_msg_receive_timeout(&msg, motor_timeout) == -1) {
       puts("GameLoop: Player did not react in time.");
       motor_controller_set_speed(dev->mctrl, 0, 0);
-      reset_status_variables();
+      reset_client_states();
       dev->state = FAILED;
       continue;
     }
