@@ -12,26 +12,25 @@
 static char M0_ADDR[IPV6_ADDR_MAX_STR_LEN];
 static char M1_ADDR[] = "ff02::1:b1:b1";
 
-/* Board status variables */
 client_t client;
 
+//arrays of entries for communication with smart-environment project
 int entry_counter = 0;
 char * nameslist[50];
 int resultslist[50];
 
 char coap_client_thread_stack[THREAD_STACKSIZE_DEFAULT];
 
+//function to create senml packets for communication with smart-environment project
 int8_t senml_json_strout(char* json_buf, uint8_t dev_type) {
   (void)dev_type;
-
   char *dev_name = "reaction_game";
+  senml_record_t records[entry_counter];
 
   senml_base_info_t base_info = {
     .version = SENML_SUPPORTED_VERSION,
     .base_name = dev_name,
   };
-
-  senml_record_t records[entry_counter];
 
   for (int i = 0; i < entry_counter; i++) {
     records[i].name = nameslist[i];
@@ -52,6 +51,7 @@ int8_t senml_json_strout(char* json_buf, uint8_t dev_type) {
   return 0;
 }
 
+//function to send json senml messages for communication with smart-environment project
 ssize_t senml_json_send(coap_pkt_t* pdu, uint8_t *buf, size_t len, uint8_t dev_type) {
 
   gcoap_resp_init(pdu, buf, len, COAP_CODE_CONTENT);
@@ -61,16 +61,10 @@ ssize_t senml_json_send(coap_pkt_t* pdu, uint8_t *buf, size_t len, uint8_t dev_t
 
   if (!senml_res) {
     printf("Successfully created SenML JSON string: %s\n", json_buf);
-
-    size_t payload_len = snprintf(
-      (char*)pdu->payload,
-      GCOAP_PDU_BUF_SIZE,
-      json_buf
-    );
-
+    size_t payload_len = snprintf((char*)pdu->payload, GCOAP_PDU_BUF_SIZE, json_buf);
     free(json_buf);
-
     int8_t gcoap_res = gcoap_finish(pdu, payload_len, COAP_FORMAT_JSON);
+
     if (gcoap_res < 0) {
       puts("Failure sending message.");
     } else {
@@ -88,7 +82,8 @@ ssize_t entry_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len) {
   return senml_json_send(pdu, buf, len, SAUL_CLASS_UNDEF);
 }
 
-void set_name(char * name, int m) {
+//sets name state after message evaluation in response handler
+void set_name(char * name, client_t m) {
   if (m == 0){
     client.M0_name = name;
     client.M0_state = HAS_NAME;
@@ -100,6 +95,7 @@ void set_name(char * name, int m) {
   }
 }
 
+//sets working state after message evaluation in response handler
 void set_is_working(int m) {
   if (m == 0){
     client.M0_state = IS_WORKING;
@@ -110,6 +106,7 @@ void set_is_working(int m) {
   }
 }
 
+//sets result state after message evaluation in response handler
 void set_result(char * result, int m) {
   if (m == 0){
     client.M0_result = result;
@@ -122,12 +119,10 @@ void set_result(char * result, int m) {
   }
 }
 
-/*
- * Response callback.
- */
+//response handler, handles coap responses
 static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *remote) {
 
-  (void)remote;       /* not interested in the source currently */
+  (void)remote;
 
   if (req_state == GCOAP_MEMO_TIMEOUT) {
     //printf("gcoap: timeout for msg ID %02u\n", coap_get_id(pdu));
@@ -140,7 +135,6 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
   }
 
   //char *class_str = (coap_get_code_class(pdu) == COAP_CLASS_SUCCESS) ? "Success" : "Error";
-
   //printf("gcoap: response %s, code %1u.%02u", class_str, coap_get_code_class(pdu), coap_get_code_detail(pdu));
 
   if (pdu->payload_len) {
@@ -161,27 +155,28 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
       strncpy(pld, (char *)pdu->payload + 3, pldlen);
       pld [pldlen] = '\0';
 
+      //evaulates received message of format MACHINE.SUBJECT.VALUE
       int m;
       if (strcmp(machine, "M0.") == 0) {
         m = 0;
       } else if (strcmp(machine, "M1.") == 0) {
         m = 1;
-      } else {
+      } else { //leave message evaluation if machine is neither M0 or M1
         //printf("%.*s\n", pdu->payload_len, (char *)pdu->payload);
         return;
       }
-
+      //if subject is st, set machine states to working
       if (strncmp(pld, "st", 2) == 0) {
         set_is_working(m);
       }
-
+      //if subject is na, set name states according to value
       if (strncmp(pld, "na", 2) == 0) {
         char name[pldlen-3];
         strncpy(name, pld+3, pldlen-3);
         name [pldlen-3] = '\0';
         set_name(name,m);
       }
-
+      //if subject is re, set result states according to value
       if (strncmp(pld, "re", 2) == 0) {
         char result[pldlen-3];
         strncpy(result, pld+3, pldlen-3);
@@ -189,6 +184,7 @@ static void _resp_handler(unsigned req_state, coap_pkt_t* pdu, sock_udp_ep_t *re
         set_result(result,m);
       }
     } else {
+      //if message has different format, print payload
       //printf(", %u bytes\n", pdu->payload_len);
       od_hex_dump(pdu->payload, pdu->payload_len, OD_WIDTH_DEFAULT);
     }
@@ -245,6 +241,7 @@ void reset_client_states(void) {
   client.M1_result = "";
 }
 
+//adds the names and results of current game to their arrays
 void set_entry_counter(void) {
   nameslist[entry_counter] = client.M0_name;
   nameslist[entry_counter+1] = client.M1_name;
@@ -309,15 +306,12 @@ void *coap_client_thread_handler(void *arg) {
 
 kernel_pid_t coap_client_init(void) {
 
+  //sets own local address for M0
   ipv6_addr_t addr;
   ipv6_addr_from_str(&addr, "fe80::");
-
   ipv6_addr_t* out = NULL;
   gnrc_ipv6_netif_find_by_prefix(&out, &addr);
-    
   ipv6_addr_to_str(M0_ADDR, out, IPV6_ADDR_MAX_STR_LEN);
-
-  puts(M0_ADDR);
 
   reset_client_states();
 
