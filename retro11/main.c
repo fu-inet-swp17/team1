@@ -182,109 +182,109 @@ static const shell_command_t shell_commands[] = {
 
 int main(void)
 {
-int32_t act_freq;
-    color_rgb_t curr_color;
-    printf("Welcome to Retro11.");
+  int32_t act_freq;
+  color_rgb_t curr_color;
+  printf("Welcome to Retro11.");
 
-    msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
+  msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
 
-    kernel_pid_t dev;
-    kernel_pid_t ifs[GNRC_NETIF_NUMOF];
-    size_t numof = gnrc_netif_get(ifs);
+  kernel_pid_t dev;
+  kernel_pid_t ifs[GNRC_NETIF_NUMOF];
+  size_t numof = gnrc_netif_get(ifs);
 
-    dev = ifs[numof-1];
+  dev = ifs[numof-1];
 
-    ipv6_addr_t addr;
-    if ( strcmp(MACHINE, "M0") == 0 ) {
-      ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
-    }
-    else {
-      ipv6_addr_from_str(&addr, "ff02::1:b1:b1");
-    }
-    gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );
+  ipv6_addr_t addr;
+  if ( strcmp(MACHINE, "M0") == 0 ) {
+    ipv6_addr_from_str(&addr, "ff02::1:a0:a0");
+  }
+  else {
+    ipv6_addr_from_str(&addr, "ff02::1:b1:b1");
+  }
+  gnrc_ipv6_netif_add_addr( dev, &addr, 64 , GNRC_IPV6_NETIF_ADDR_FLAGS_UNICAST );
 
-    act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
-    if (act_freq <= 0) {
-      puts("Error initializing PWM.");
-      return 0;
-    }
-
-    if (dcmotor_init(&motor_a, CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, act_freq,
-          CONF_MOTOR_RES, CONF_MOTOR_A_DIRA, CONF_MOTOR_A_DIRB) < 0) {
-      puts("Error initializing motor a");
-      return 0;
-    }
-
-    if (dcmotor_init(&motor_b, CONF_MOTOR_PWM, CONF_MOTOR_B_PWM_CHAN, act_freq,
-          CONF_MOTOR_RES, CONF_MOTOR_B_DIRA, CONF_MOTOR_B_DIRB) < 0) {
-      puts("Error initializing motor b");
-      return 0;
-    }
-
-    if(motor_controller_init(&motor_controller, &motor_a, &motor_b) < 0) {
-      puts("Error initializing motor controller");
-      return 0;
-    }
-
-    printf("Motor init done.\n");
-
-    if (neopixel_init(&led_stripe, CONF_LED_COUNT, CONF_LED_STRIPE) < 0){
-     puts("Error initializing led stripe");
-      return 0;
-    }
-
-    printf("Neopixel init done.\n");
-
-    if (multiplexer_init_int(&multiplexer, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
-          CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_multiplexer_receive, NULL) < 0) {
-      puts("Error initializing multiplexer");
-      return 0;
-    }
-
-    enableBtns = false;
-
-    printf("Multiplexer is done.\n");
-
-    puts("Start init display.");
-
-    if (lcd_spi_init(&display, CONF_DISPLAY_SPI, CONF_DISPLAY_CS, CONF_DISPLAY_CMD, CONF_DISPLAY_RESET) < 0) {
-      puts("Error initializing display.");
-      return 0;
-    }
-
-    curr_color.r = CONF_DISPLAY_BRIGHTNESS;
-    curr_color.g = CONF_DISPLAY_BRIGHTNESS;
-    curr_color.b = CONF_DISPLAY_BRIGHTNESS;
-    neopixel_set_pixel_color(&led_stripe, CONF_DISPLAY_LED1, curr_color);
-    neopixel_set_pixel_color(&led_stripe, CONF_DISPLAY_LED2, curr_color);
-    neopixel_show(&led_stripe);
-
-    lcd_spi_set_contrast(&display, 25);
-    lcd_spi_set_display_normal(&display, false);
-    lcd_spi_clear(&display);
-    lcd_spi_show(&display);
-    printf("Display is done.\n");
-    /* TODO: We do not have a battery, so its always the same. :) */
-    random_init(xtimer_now_usec());
-
-
-   if (!strcmp(MACHINE, "M0")) {
-      coap_client_init();
-    }
-
-    coap_server_init();
-
-    game_init(&game, &motor_controller, &display, &multiplexer, &led_stripe);
-
-    gamePid = thread_create(game_server_thread_stack,
-        sizeof(game_server_thread_stack),
-        THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
-        game_server_thread_handler, NULL, "game thread");
-
-    puts("Main: Starting shell.");
-    char line_buf[SHELL_DEFAULT_BUFSIZE];
-    shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
-    puts("Main: Shell done.");
-
+  act_freq = pwm_init(CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, CONF_MOTOR_FREQ, CONF_MOTOR_RES);
+  if (act_freq <= 0) {
+    puts("Error initializing PWM.");
     return 0;
+  }
+
+  if (dcmotor_init(&motor_a, CONF_MOTOR_PWM, CONF_MOTOR_A_PWM_CHAN, act_freq,
+        CONF_MOTOR_RES, CONF_MOTOR_A_DIRA, CONF_MOTOR_A_DIRB) < 0) {
+    puts("Error initializing motor a");
+    return 0;
+  }
+
+  if (dcmotor_init(&motor_b, CONF_MOTOR_PWM, CONF_MOTOR_B_PWM_CHAN, act_freq,
+        CONF_MOTOR_RES, CONF_MOTOR_B_DIRA, CONF_MOTOR_B_DIRB) < 0) {
+    puts("Error initializing motor b");
+    return 0;
+  }
+
+  if(motor_controller_init(&motor_controller, &motor_a, &motor_b) < 0) {
+    puts("Error initializing motor controller");
+    return 0;
+  }
+
+  printf("Motor init done.\n");
+
+  if (neopixel_init(&led_stripe, CONF_LED_COUNT, CONF_LED_STRIPE) < 0){
+   puts("Error initializing led stripe");
+    return 0;
+  }
+
+  printf("Neopixel init done.\n");
+
+  if (multiplexer_init_int(&multiplexer, CONF_MULTIPLEXER_RECV, CONF_MULTIPLEXER_ADR_A,
+        CONF_MULTIPLEXER_ADR_B, CONF_MULTIPLEXER_ADR_C, &int_multiplexer_receive, NULL) < 0) {
+    puts("Error initializing multiplexer");
+    return 0;
+  }
+
+  enableBtns = false;
+
+  printf("Multiplexer is done.\n");
+
+  puts("Start init display.");
+
+  if (lcd_spi_init(&display, CONF_DISPLAY_SPI, CONF_DISPLAY_CS, CONF_DISPLAY_CMD, CONF_DISPLAY_RESET) < 0) {
+    puts("Error initializing display.");
+    return 0;
+  }
+
+  curr_color.r = CONF_DISPLAY_BRIGHTNESS;
+  curr_color.g = CONF_DISPLAY_BRIGHTNESS;
+  curr_color.b = CONF_DISPLAY_BRIGHTNESS;
+  neopixel_set_pixel_color(&led_stripe, CONF_DISPLAY_LED1, curr_color);
+  neopixel_set_pixel_color(&led_stripe, CONF_DISPLAY_LED2, curr_color);
+  neopixel_show(&led_stripe);
+
+  lcd_spi_set_contrast(&display, 25);
+  lcd_spi_set_display_normal(&display, false);
+  lcd_spi_clear(&display);
+  lcd_spi_show(&display);
+  printf("Display is done.\n");
+  /* TODO: We do not have a battery, so its always the same. :) */
+  random_init(xtimer_now_usec());
+
+
+ if (!strcmp(MACHINE, "M0")) {
+    coap_client_init();
+  }
+
+  coap_server_init();
+
+  game_init(&game, &motor_controller, &display, &multiplexer, &led_stripe);
+
+  gamePid = thread_create(game_server_thread_stack,
+      sizeof(game_server_thread_stack),
+      THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
+      game_server_thread_handler, NULL, "game thread");
+
+  puts("Main: Starting shell.");
+  char line_buf[SHELL_DEFAULT_BUFSIZE];
+  shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+  puts("Main: Shell done.");
+
+  return 0;
 }
