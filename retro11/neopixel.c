@@ -40,17 +40,6 @@ int neopixel_init(neopixel_t *dev, uint32_t led_count, gpio_t data_out)
   return 0;
 }
 
-void neopixel_free(neopixel_t *dev)
-{
-  if(dev->pixels)
-    free(dev->pixels);
-}
-
-void neopixel_set_brightness(neopixel_t *dev, uint8_t brightness)
-{
-  dev->brightness = brightness;
-}
-
 int neopixel_set_pixel_color(neopixel_t *dev, uint32_t index, color_rgb_t pixel)
 {
   if (index > dev->led_count) {

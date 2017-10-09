@@ -35,11 +35,11 @@ extern "C" {
  */
 typedef struct {
     pwm_t pwm;           /**< the PWM device driving the servo */
-    int channel;            /**< the channel the servo is connected to */
-    uint32_t freq;      /**< frequency of PWM signal */
-    uint16_t res;       /**< resolution of PWM signal */
-    gpio_t dir_a;     /**< first pin to set direction */
-    gpio_t dir_b;     /**< second pin to set direction */
+    int channel;         /**< the channel the servo is connected to */
+    uint32_t freq;       /**< frequency of PWM signal */
+    uint16_t res;        /**< resolution of PWM signal */
+    gpio_t dir_a;        /**< first pin to set direction */
+    gpio_t dir_b;        /**< second pin to set direction */
 } dcmotor_t;
 
 /**

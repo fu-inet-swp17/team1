@@ -35,17 +35,16 @@ extern "C" {
  * @brief Descriptor struct for Neopixel LED stripe
  */
 typedef struct {
-    uint32_t led_count;  /**< count of leds to control */
-    gpio_t data_out;     /**< pin for data out */
-    uint8_t brightness;
-    color_rgb_t pixels[128];
+    uint32_t led_count;      /**< count of leds to control */
+    gpio_t data_out;         /**< pin for data out */
+    color_rgb_t pixels[128]; /**< In memort mapping of colors */
 } neopixel_t;
 
 /**
  * @brief Initialize a Neopixel by assigning it a gpio pin
  *
  * @param[out] dev         struct describing the neopixel led stripe
- * @param[in] leds         led count
+ * @param[in] leds         LED count
  * @param[in] data         gpio pin for data out
  *
  * @return                  0 on success
@@ -53,14 +52,38 @@ typedef struct {
  */
 int neopixel_init(neopixel_t *dev, uint32_t led_count, gpio_t data_out);
 
-void neopixel_free(neopixel_t *dev);
-
-void neopixel_set_brightness(neopixel_t *dev, uint8_t brightness);
-
+/**
+ * @brief Set color of LED
+ *
+ * @param[out] dev         struct describing the neopixel led stripe
+ * @param[in] index        LED address to set color
+ * @param[in] color        new color for LED
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
 int neopixel_set_pixel_color(neopixel_t *dev, uint32_t index, color_rgb_t pixel);
 
+/**
+ * @brief Get color of LED
+ *
+ * @param[out] dev         struct describing the neopixel led stripe
+ * @param[in] index        LED address to get color
+ * @param[in] color        new color for LED
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
 int neopixel_get_pixel_color(neopixel_t *dev, uint32_t index, color_rgb_t *pixel);
 
+/**
+ * @brief Update LED controllers
+ *
+ * @param[out] dev         struct describing the neopixel led stripe
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
 void neopixel_show(neopixel_t *dev);
 
 #ifdef __cplusplus

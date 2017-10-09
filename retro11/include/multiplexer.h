@@ -32,12 +32,12 @@ extern "C" {
  * @brief Descriptor struct for a multiplexer
  */
 typedef struct {
-  gpio_t receive;
-  gpio_t addr_a;
-  gpio_t addr_b;
-  gpio_t addr_c;
-  int16_t curr_addr;
-  int with_int;
+  gpio_t receive;    /**< GPIO Pin for receive */
+  gpio_t addr_a;     /**< GPIO Pin for addr a */
+  gpio_t addr_b;     /**< GPIO Pin for addr b */
+  gpio_t addr_c;     /**< GPIO Pin for addr c */
+  int16_t curr_addr; /**< Last accessed address */
+  int with_int;      /**< Enable interrupts */
 } multiplexer_t;
 
 /**

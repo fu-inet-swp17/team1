@@ -17,6 +17,9 @@
 extern "C" {
 #endif
 
+/**
+ * @breif Enum to save state of game
+ */
 typedef enum {
   INIT,
   NAME_READY,
@@ -27,6 +30,9 @@ typedef enum {
   FAILED
 } game_state_t;
 
+/**
+ * @brief Descriptor struct of game
+ */
 typedef struct {
   kernel_pid_t ctrl_pid;
   motor_controller_t *mctrl;
@@ -38,7 +44,28 @@ typedef struct {
   char playername[17];
 } game_t;
 
+/**
+ * @brief Starting the game loop
+ *
+ * @param[out] dev          struct describing the game
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
 void game_run(game_t *dev);
+
+/**
+ * @brief Initialize game
+ *
+ * @param[out] dev          struct describing the game
+ * @param[in] mctrl         motor controller
+ * @param[in] display       LCD display
+ * @param[in] mplexer       Input multiplexer
+ * @param[in] led Stripe    LED stripe for animations
+ *
+ * @return                  0 on success
+ * @return                  <0 on error
+ */
 void game_init(game_t *dev, motor_controller_t *mctrl, lcd_spi_t *display, multiplexer_t *mplexer, neopixel_t *led_stripe);
 
 #ifdef __cplusplus
