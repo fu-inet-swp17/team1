@@ -18,6 +18,7 @@ the gaming platforms. For this, the application implements a COAP client and ser
 
 ## COAP Client/Server
 
+Patrick
 
 ## Reaction Game
 
