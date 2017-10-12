@@ -83,8 +83,8 @@ const coap_resource_t coap_resources[] = {
     { "/request/result", COAP_GET, _request_result_handler },
     { "/set/looser", COAP_GET, _set_looser_handler },
     { "/set/winner", COAP_GET, _set_winner_handler },
-    { "/start/game", COAP_GET, _start_game_handler },
     { "/se-app/entries", COAP_GET, &entry_handler}
+    { "/start/game", COAP_GET, _start_game_handler }
 };
 
 gcoap_listener_t coap_server_listener = {
