@@ -16,9 +16,6 @@ explained further down.
 To let players compete against each other it is necessary to communicate between
 the gaming platforms. For this, the application implements a COAP client and server.
 
-## COAP Client/Server
-
-Patrick
 
 ## Reaction Game
 
@@ -31,6 +28,15 @@ stopping and the player reacting is the reaction time which is then used to dete
 the winner.
 You can lookup the highscore in the web application of [team2](https://github.com/fu-inet-swp17/team2)
 of this years software project.
+
+
+## COAP Client/Server
+
+The communication between platforms is realized via the RESTful constrained application protocol sending messages utilizing UDP and IPv6. 
+One microcontroller is running a client applictation which is controling the game. The information needed is provided by a server application running on each microcontroller. 
+Depending on the game state, the client polls the ressource containing the required information of both servers with a get-method until the servers provide the information to proceed to the next stage. In the first state the client requests the nicknames of the player, then request for the actual reaction game to start in the second state, goes on to request the reaction time in the third state and requests each machine to display if they won or lost in the last state.
+Additionally both servers have a ressource which provides highscore information wrapped in SenML format when requested by team2.
+
 
 ## Implementational particularities
 
