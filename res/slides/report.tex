@@ -40,6 +40,7 @@ Was das Anwendungsdesign selbst betrifft, initialisieren wir zunächst alle unse
 
 \section{Hardware}
 \label{sec:hw}
+\subsection{vorhadene HW}
 Ein paar einleitende Sätze
 \begin{enumerate}
 	\item samr21 Xpro
@@ -53,9 +54,8 @@ Ein paar einleitende Sätze
 	\end{enumerate}
 \end{enumerate}
 Retro11 ist eine C-basierte RIOT-Anwendung, die auf dem Mikrocontroller SAMR21 XPro läuft. Zunächst haben wir mit der Entwicklung der Hardwareplattform und dem Schreiben von Treibern für jedes Peripheriegerät begonnen, da diese noch nicht von RIOT selbst unterstützt wurden. Jeder Treiber ist entsprechend den von RIOT angebotenen Beispieltreibern implementiert. Die Treiberimplementierung war für alle Peripheriegeräte außer dem WS2811 unkompliziert. Der WS2811 bietet einen digitalen Eingang zum Empfang von Farbinformationen und einen digitalen Ausgang zum Senden von Farbinformationen an den nächsten WS2811 in Reihe. Zum Schluss steuert jede WS2811 eine LED und bis zu 1024 WS2811 können miteinander verkettet werden, um ganze LED-Arrays zu steuern. Da der WS2811 nur ein Einleiter-Protokoll und keine zusätzliche Taktung anbietet, benötigt er für die Unterscheidung zwischen 0 und 1 in seinem Protokoll harte Timings. Für unser Projekt haben wir zwei verschiedene WS2811 LED-Sets gekauft. Das erste ist ein bereits montierter LED-Streifen, der mit unserem Treiber aus der Box heraus gearbeitet hat und das zweite ist ein Set von separaten Chips und LEDs, die Sie selbst zusammenbauen können. Der zweite Kit weigerte sich, mit unserem Treiber zu arbeiten und nach mehrtägigen Debugging-Tests stellte sich heraus, dass der Controller eine gemeinsame Annode benötigt, aber die LEDs, die wir erhielten, boten eine gemeinsame Kathode. Leider war der Shop, bei dem wir die LEDs gekauft haben, nicht in der Lage, die richtigen LEDs rechtzeitig zur Verfügung zu stellen, um das Projekt komplett abzuschließen.
-
+\subsection{zusätzliche HW}
 \subsection{Treiber}
-\label{sec:driver}
 
 \section{Netzwerkkommunikation}
 \label{sec:net}
@@ -68,27 +68,31 @@ Die Kommunikation zwischen den Plattformen erfolgt über das RESTful Constrained
 
 \section{Stand der Umsetzung}
 \label{sec:status}
-\begin{itemize}
-	\item Probleme
-	\item Rückblick auf Zeitplan
-\end{itemize}
+\subsection{Stand}
+Kommunikation zwischen Knoten
+Hardware $(H-brücke, Motor, Multiplexer, Buttons, LCD, LED-Stripe )$
+Treiber
+Basisspiel
+\subsection{Probleme}
+LEDs von Buttons fehlen
+Kommunikation mit Raspi/Website/Coap-Gateway
+LCD Kontrast
+LCD Backlight
+\subsection{Rückblick auf Zeitplan}
+Zeitplan nicht eingehalten
+Hardware hat mehr Zeit gekostet als erwartet
+Probleme mit Netzwerkkommunikation
+Gar nicht nach Magnetbändern gesucht
+Spiel runterschreiben ging am Ende dann schnell
+Entwurf Poster war schnell aber nicht so früh wie geplant
 
 \section{Weiterführende Arbeit}
 \label{sec:further}
-\begin{itemize}
-    \item Spiele
-	\begin{enumerate}
-	    \item LUA-API
-		\item mehr Spiele
-		\item OTA
-	\end{enumerate}
-    \item Buttons	
-	\begin{enumerate}
-		\item LEDs
-		\item 3D-Druck Gehäuse
-		\item IRQ statt Polling
-	\end{enumerate}
-    \item Motoren reinigen
-\end{itemize}
+Da die LEDs für die Buttons leider nicht eingebaut werden konnten ist eine sinnvolle Weiterführung des Projekts die LEDs zu ergänzen und Funktionen zu entwickeln, so dass die aktuell drückbaren Buttons auch entsprechend ihres Zweckes farbig aufleuchten. So kann eine Menüführung deutlich offensichtlicher abgebildet werden, als es derzeit der Fall ist, da bisher die Spieler nicht erkennen können, welche Buttons welchem Zweck dienen.
+Weiterhin war es geplant Ersatz für die fehlenden Button-Aufsätze mittels 3D-Druck auszudrucken. Entsprechende Modelle sind bereits im Repository enthalten.
+Da stets nur ein einzelner Button im Interruptmodus betrieben werden kann und mehrere Buttons gepollt werden müssen entstehen Latenzen bei der Eingabe durch den Nutzer. Es ist möglich, dass hier eine Designänderung eine bessere Nutzererfahrung schafft.
+Die Motoren müssen gereinigt werden.
+Eine weitere Möglichkeit der Erweiterung des Projekts wäre das hinzufügen von weiteren Spielen. Ein denkbarer Ansatz ist es eine LUA-API zu entwerfen, so dass neue Spiele abstrahiert bzw. hochsprachig geschrieben werden können und so schnell eine Vielzahl von Spielen für die Hardware zur Verfügung gestellt werden kann. So kann vorraussichtlich die Häufigkeit der Nutzung gesteigert, aber auch die Akzeptanz durch die Studenten gesteigert werden, welche ihre eigenen Spiele schneller und nur mit wenige Aufwand auf der Hardware ausprobieren können.
+Eine optimale Lösung um neu hinzugefügte Spiele auf den Boards auszuführen wäre das Ausführen regelmäßiger over-the-air-updates welche die redegierten Spiele aus den entsprechenden Paketquellen auf die Boards flashen.
 
 \end{document}
