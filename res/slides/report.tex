@@ -56,16 +56,16 @@
   \label{sec:hardware}
   \subsection{vorhandene Hardware}
     \label{sec:hardware_existing}
-    Als Basis f"ur unser Projekt dient die im Foye stehende und leider nicht
+    Als Basis f"ur unser Projekt dient die im Foyer stehende und leider nicht
     mehr funktionst"uchtige \textit{PDP11}. Im besonderen haben wir uns f"ur
     die zwei Bandlaufwerke der \textit{PDP11} interessiert, da sie jeweils neun
     Taster und zwei einzeln ansteuerbare Motoren bieten. Die Motoren k"onnen im
-    und gegen den Uhrzeigersinn gedreht und bieten durch die
-    Ger"auschentwicklung sowie ihrer Bewegung einen guten Ausl"oser f"ur unser
+    und gegen den Uhrzeigersinn drehen und bieten durch die
+    Ger"auschentwicklung sowie ihre Bewegung einen guten Ausl"oser f"ur unser
     Reaktionsspiel.\\
     Von den neun Tastern sind zwar alle mit unserem Mikrocontroller verbunden
-    und auch per Software ansteuerbar, allerdings verwenden zur Zeit nur die
-    ersten drei Taster.
+    und auch per Software ansteuerbar, allerdings sind derzeit nur die
+    ersten drei Taster in Verwendung.
 
   \subsection{zus"atzliche Hardware}
     \label{sec:hardware_additional}
@@ -73,22 +73,22 @@
     gestellt. Der \textit{SAMR21 Xpro} ist ein Evaluationsboard f"ur den
     \textit{ATSAMR21G18A}. Das Board bietet integrierte Funkunterst"utzung zur
     Kommunikation und durch den \textit{Cortex-M0+} auch ausreichend Leistung um
-    unser Projekt umzusetzen. Im Zuge der Software entwicklung sind wir nicht
+    unser Projekt umzusetzen. Im Zuge der Softwareentwicklung sind wir nicht
     an die Leistungsgrenzen des Chips gesto"sen, allerdings bietet er nicht
-    gen"ugend I/O-Pins zur ansteuerung der gesamten Peripherie.\\
+    gen"ugend I/O-Pins zur Ansteuerung der gesamten Peripherie.\\
     \begin{wrapfigure}{r}{0.5\textwidth}
       \centering
       \label{figure:Hardwareplattform}
       \includegraphics[scale=0.05]{Platine.jpg}
       \captionof{figure}{Mikrocontroller, Multiplexer und H-Br"ucke}
     \end{wrapfigure}
-    Auf Grund der mangelnden I/O-Pins haben wir uns dazu entschieden die Taster
+    In Ermangelung ausreichender I/O-Pins haben wir uns dazu entschieden die Taster
     "uber den \textit{S74LS151} anzusteuern. Der \textit{S74LS151} ist ein 8Bit
     Multiplexer und erm"oglicht es uns alle Taster anzusteuern, allerdings kann
     nur ein Taster gleichzeitig mit einem Interrupt belegt werden.\\
     Zur Beleuchtung der Bandlaufwerke haben wir RGB-LED-Streifen verbaut. Diese
     LED-Streifen basieren auf dem \textit{WS2811}, der jeweils eine LED steuern
-    kann und bis zu 1024mal in Reihe geschaltet werden kann um komplette
+    und bis zu 1024mal in Reihe geschaltet werden kann um komplette
     Animationen zu steuern. Die existierenden Gl"uhlampen der Taster wollten
     wir ebenfalls durch LED's ersetzen die auf dem \textit{WS2811} basieren,
     allerdings gab es hier Lieferprobleme.\\
@@ -99,7 +99,7 @@
       \captionof{figure}{Frontansicht der Bandlaufwerke}
     \end{wrapfigure}
     Zur Ansteuerung der Bandlaufwerkmotoren verwenden wir die doppel H-Br"ucke
-    \textit{L298-H}. Sind ben"otigt als einziges Modul eine 12V
+    \textit{L298-H}. Diese ben"otigt als einziges Modul eine 12V
     Versorgungsspannung.\\
     F"ur zuk"unftige Men"uf"uhrung, Eingabe der Nicknames und weiteres
     visuelles Feedback haben wir ein 128x64 Pixel LCD des Typs
@@ -116,7 +116,7 @@
   \subsection{Treiber}
     \label{sec:hardware_driver}
     Nach der Entwicklung der Hardwareplattform haben wir f"ur jede Peripherie
-    einen Teiber etnwicklet, da diese noch nicht von RIOT selbst unterstützt
+    einen Teiber entwickelt, da diese noch nicht von RIOT selbst unterstützt
     wurden. Jeder Treiber ist entsprechend den von RIOT angebotenen
     Beispieltreibern implementiert. Die Treiberimplementierung war für alle
     Peripheriegeräte außer dem WS2811 unkompliziert. Der WS2811 bietet einen
@@ -150,12 +150,12 @@
   \subsection{Anwendungsdesign}
     \label{sec:retro11_design}
     Was das Anwendungsdesign selbst betrifft, initialisieren wir zunächst alle
-    unsere Treiber und starten dann vier Threads, um die verschiedenen Aspekte
+    benötigten Treiber und starten dann vier Threads, um die verschiedenen Aspekte
     unserer Anwendung zu steuern. Der erste Thread ist der MotorController, der auf
     Meldungen zum Starten oder Stoppen des Motors wartet. Da wir die Motoren für
-    eine bestimmte Zeit benötigen, kann man auch ein Timeout passieren, nach dem
+    eine bestimmte Zeit benötigen, kann man auch ein Timeout übergeben, nach dem
     der Motor gestoppt werden soll. Der zweite Thread ist der CoapServer, der die
-    Kommunikation zwischen den einzelnen Knoten handhabt und die Endergebnisse auch
+    Kommunikation zwischen den beiden Knoten handhabt und die Endergebnisse auch
     an das RasperryPi von team2 weiterleitet, um eine webfähige Highscore zu
     erstellen. Der dritte Thread ist das Spiel selbst, das die Kontrolle über alle
     Peripheriegeräte übernimmt und mit dem CoapServer über eine
