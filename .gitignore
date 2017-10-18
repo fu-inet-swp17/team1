@@ -29,6 +29,17 @@
 *.hex
 *.swp
 
+# Latex
+*.aux
+*.log
+*.blg
+*.bbl
+*-blx.bib
+*.fdb_latexmk
+*.fls
+*.run.xml
+*.synctex.gz
+
 # Debug files
 *.dSYM/
 *.su
