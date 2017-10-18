@@ -138,61 +138,68 @@
     zu stellen, um das Projekt komplett abzuschließen.
 
 \section{Retro11}
-  Dies ist die C-basierte RIOT-Anwendung zur Steuerung des vorhandenen
-  PDP11-Bandlaufwerks, einer zusätzlichen LCD-Anzeige und LEDs. Neben der
-  Kontrolle über die vorhandene Hardware wird diese Anwendung mit einem einfachen
-  Spiel ausgeliefert, um in der Reaktionszeit zu konkurrieren, was weiter unten
-  erklärt wird. Um Spieler gegeneinander antreten zu lassen, ist es notwendig,
-  zwischen den Spielplattformen zu kommunizieren. Dazu implementiert die
-  Anwendung einen COAP-Client und -Server.\\
-  Für dieses Spiel haben Sie mindestens zwei Spieler, die beide vor einem der
-  PDP11 an der FU Berlin stehen. Zuerst werden sie aufgefordert, dort einen
-  Nickname einzugeben, der an den zentralen Server geschickt wird, um später die
-  Reaktionszeit zu speichern und einen Highscore anzuzeigen. Das Spiel startet
-  die Bandlaufwerkmotoren der beiden Knoten und sobald sie gestoppt werden, wird
-  der Spieler aufgefordert, so schnell wie möglich zu reagieren und einen Knopf
-  zu drücken. Die Zeit zwischen dem Anhalten des Motors und der Reaktion des
-  Spielers ist die Reaktionszeit, die dann zur Ermittlung des Siegers
-  herangezogen wird. Den Highscore können Sie in der Webapplikation von team2 des
-  diesjährigen Softwareprojekts nachschlagen.\\
-  Was das Anwendungsdesign selbst betrifft, initialisieren wir zunächst alle
-  unsere Treiber und starten dann vier Threads, um die verschiedenen Aspekte
-  unserer Anwendung zu steuern. Der erste Thread ist der MotorController, der auf
-  Meldungen zum Starten oder Stoppen des Motors wartet. Da wir die Motoren für
-  eine bestimmte Zeit benötigen, kann man auch ein Timeout passieren, nach dem
-  der Motor gestoppt werden soll. Der zweite Thread ist der CoapServer, der die
-  Kommunikation zwischen den einzelnen Knoten handhabt und die Endergebnisse auch
-  an das RasperryPi von team2 weiterleitet, um eine webfähige Highscore zu
-  erstellen. Der dritte Thread ist das Spiel selbst, das die Kontrolle über alle
-  Peripheriegeräte übernimmt und mit dem CoapServer über eine
-  Shared-State-Variable kommuniziert. Das Spiel steuert die Benutzereingaben und
-  -ausgaben und bietet ein Arcade-ähnliches Spielerlebnis. Der vierte und letzte
-  Thread dient zu Debugging-Zwecken und führt einfach eine Shell mit
-  benutzerdefinierten Befehlen für Hardware-Diagnose und andere
-  Debuggingoperationen aus. Er ist nur zugänglich, wenn ein Computer an den
-  USB-Port des SAMR21 Xpro angeschlossen wird.\\
+  \label{sec:retro11}
+  Retro11 ist die C-Basierte RIOT-Anwendung, die auf dem \textit{SAMR21 XPro}
+  l"auft. Neben der Kontrolle über die vorhandene Hardware wird diese
+  Anwendung mit einem einfachen Spiel ausgeliefert, um in der Reaktionszeit zu
+  konkurrieren, welche weiter unten erklärt wird. Um Spieler gegeneinander
+  antreten zu lassen, ist es notwendig, zwischen den Spielplattformen zu
+  kommunizieren. Dazu implementiert die Anwendung einen COAP-Client und
+  -Server.\\
 
-\section{Netzwerkkommunikation}
-  \label{sec:net}
-  Die Kommunikation zwischen den Plattformen erfolgt über das RESTful Constrained
-  Application Protocol, CoAP, das Nachrichten über UDP und IPv6 sendet, wie in
-  Abbildung \ref{fig:seq_diagram} . Ein Mikrocontroller führt eine
-  Client-Applictation aus, die das Spiel steuert. Die benötigten Informationen
-  werden von einer Server-Anwendung bereitgestellt, die auf jedem Mikrocontroller
-  ausgeführt wird. Abhängig vom Spielstatus fragt der Client die Ressource mit
-  den erforderlichen Informationen beider Server mit einer Get-Methode ab, bis
-  die Server die Informationen bereitstellen, um zur nächsten Stufe überzugehen.
-  Im ersten Zustand fordert der Client die Nicknamen des Spielers an, fordert
-  dann das eigentliche Reaktionsspiel auf, im zweiten Zustand zu starten, fordert
-  die Reaktionszeit im dritten Zustand an und fordert jede Maschine auf, sich
-  anzeigen zu lassen, ob sie im letzten Zustand gewonnen oder verloren hat.
-  Zusätzlich verfügen beide Server über eine Ressource, die auf Wunsch von team2
-  Highscore-Informationen im SenML-Format bereitstellt.
-  \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.1]{team1_kommunikation.png}
-    \caption{\label{fig:seq_diagram}Sequenzdiagramm der Anwendung}
-  \end{figure}
+  \subsection{Anwendungsdesign}
+    \label{sec:retro11_design}
+    Was das Anwendungsdesign selbst betrifft, initialisieren wir zunächst alle
+    unsere Treiber und starten dann vier Threads, um die verschiedenen Aspekte
+    unserer Anwendung zu steuern. Der erste Thread ist der MotorController, der auf
+    Meldungen zum Starten oder Stoppen des Motors wartet. Da wir die Motoren für
+    eine bestimmte Zeit benötigen, kann man auch ein Timeout passieren, nach dem
+    der Motor gestoppt werden soll. Der zweite Thread ist der CoapServer, der die
+    Kommunikation zwischen den einzelnen Knoten handhabt und die Endergebnisse auch
+    an das RasperryPi von team2 weiterleitet, um eine webfähige Highscore zu
+    erstellen. Der dritte Thread ist das Spiel selbst, das die Kontrolle über alle
+    Peripheriegeräte übernimmt und mit dem CoapServer über eine
+    Shared-State-Variable kommuniziert. Das Spiel steuert die Benutzereingaben und
+    -ausgaben und bietet ein Arcade-ähnliches Spielerlebnis. Der vierte und letzte
+    Thread dient zu Debugging-Zwecken und führt einfach eine Shell mit
+    benutzerdefinierten Befehlen für Hardware-Diagnose und andere
+    Debuggingoperationen aus. Er ist nur zugänglich, wenn ein Computer an den
+    USB-Port des SAMR21 Xpro angeschlossen wird.\\
+
+  \subsection{Reaktionsspiel}
+    \label{sec:retro11_game}
+    Für dieses Spiel haben Sie mindestens zwei Spieler, die beide vor einem der
+    PDP11 an der FU Berlin stehen. Zuerst werden sie aufgefordert, dort einen
+    Nickname einzugeben, der an den zentralen Server geschickt wird, um später die
+    Reaktionszeit zu speichern und einen Highscore anzuzeigen. Das Spiel startet
+    die Bandlaufwerkmotoren der beiden Knoten und sobald sie gestoppt werden, wird
+    der Spieler aufgefordert, so schnell wie möglich zu reagieren und einen Knopf
+    zu drücken. Die Zeit zwischen dem Anhalten des Motors und der Reaktion des
+    Spielers ist die Reaktionszeit, die dann zur Ermittlung des Siegers
+    herangezogen wird. Den Highscore können Sie in der Webapplikation von team2 des
+    diesjährigen Softwareprojekts nachschlagen.\\
+
+  \subsection{Netzwerkkommunikation}
+    \label{sec:net}
+    Die Kommunikation zwischen den Plattformen erfolgt über das RESTful Constrained
+    Application Protocol, CoAP, das Nachrichten über UDP und IPv6 sendet, wie in
+    Abbildung \ref{fig:seq_diagram} . Ein Mikrocontroller führt eine
+    Client-Applictation aus, die das Spiel steuert. Die benötigten Informationen
+    werden von einer Server-Anwendung bereitgestellt, die auf jedem Mikrocontroller
+    ausgeführt wird. Abhängig vom Spielstatus fragt der Client die Ressource mit
+    den erforderlichen Informationen beider Server mit einer Get-Methode ab, bis
+    die Server die Informationen bereitstellen, um zur nächsten Stufe überzugehen.
+    Im ersten Zustand fordert der Client die Nicknamen des Spielers an, fordert
+    dann das eigentliche Reaktionsspiel auf, im zweiten Zustand zu starten, fordert
+    die Reaktionszeit im dritten Zustand an und fordert jede Maschine auf, sich
+    anzeigen zu lassen, ob sie im letzten Zustand gewonnen oder verloren hat.
+    Zusätzlich verfügen beide Server über eine Ressource, die auf Wunsch von team2
+    Highscore-Informationen im SenML-Format bereitstellt.
+    \begin{figure}[h]
+      \centering
+      \includegraphics[scale=0.1]{team1_kommunikation.png}
+      \caption{\label{fig:seq_diagram}Sequenzdiagramm der Anwendung}
+    \end{figure}
 
 \section{Stand der Umsetzung}
   \label{sec:status}
