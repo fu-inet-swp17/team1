@@ -223,30 +223,27 @@
 
 \section{Weiterführende Arbeit}
   \label{sec:further}
-  Da die LEDs für die Buttons leider nicht eingebaut werden konnten ist eine
-  sinnvolle Weiterführung des Projekts die LEDs zu ergänzen und Funktionen zu
-  entwickeln, so dass die aktuell drückbaren Buttons auch entsprechend ihres
-  Zweckes farbig aufleuchten. So kann eine Menüführung deutlich offensichtlicher
-  abgebildet werden, als es derzeit der Fall ist, da bisher die Spieler nicht
-  erkennen können, welche Buttons welchem Zweck dienen. Weiterhin war es geplant
-  Ersatz für die fehlenden Button-Aufsätze mittels 3D-Druck auszudrucken.
-  Entsprechende Modelle sind bereits im Repository enthalten. Da stets nur ein
-  einzelner Button im Interruptmodus betrieben werden kann und mehrere Buttons
-  gepollt werden müssen entstehen Latenzen bei der Eingabe durch den Nutzer. Es
-  ist möglich, dass hier eine Designänderung eine bessere Nutzererfahrung
-  schafft.\\
-  Die Motoren müssen gereinigt werden.
-  Eine weitere Möglichkeit der Erweiterung des Projekts wäre das hinzufügen von
-  weiteren Spielen. Ein denkbarer Ansatz ist es eine LUA-API zu entwerfen, so
-  dass neue Spiele abstrahiert bzw.\ hochsprachig geschrieben werden können und so
-  schnell eine Vielzahl von Spielen für die Hardware zur Verfügung gestellt
-  werden kann. So kann vorraussichtlich die Häufigkeit der Nutzung gesteigert,
-  aber auch die Akzeptanz durch die Studenten gesteigert werden, welche ihre
-  eigenen Spiele schneller und nur mit wenige Aufwand auf der Hardware
-  ausprobieren können.
-  Eine optimale Lösung um neu hinzugefügte Spiele auf den Boards auszuführen wäre
-  das Ausführen regelmäßiger over-the-air-updates welche die redegierten Spiele
-  aus den entsprechenden Paketquellen auf die Boards flashen.
+  Zuerst gilt es die bis jetzt nicht gelieferten RGB-LED's wie in Abschnitt
+  ~\ref{sec:hardware_additional} beschrieben in die Taster einzubauen. Bis
+  jetzt werden die zu dr"uckenden Taster nicht visuel hervorgehoben, sodass
+  Nutzer unsicher sind welche Taster welche Funktionsbelegung haben.\\
+  Zur weiteren Versch"onerung der Bandlaufwerke sollten die fehlenden
+  Tasterdeckel gedruckt werden. Ein druckfertiges 3D-Modell ist schon im
+  Repository vorhanden. Im Zuge dessen sollten auch die Motoren gereinigt
+  werden, da sie sich zur Zeit erst bei einem relativ hohen Energieaufwand in
+  Bewegung setzen. Dies w"urde Lautst"arkeentwicklung und Stromverbrauch
+  optimieren.\\
+  Im Bezug auf \textit{Retro11} sollte als erstes ein Framework entwickelt
+  werden in dem weitere Spiele implementiert werden k"onnen.
+  Eine M"oglichkeit besteht darin einen Lua-Interpreter in \textit{Retro11}
+  einzubetten. Interessierte Studierende sind dann in der Lage Spiele in einer
+  Hochsprache gegen eine konsistente API zu entwickeln und m"ussen nicht
+  notwendigerweise mit RIOT vertraut sein.\\
+  Da ein regelm"a"siges manuelles Updaten der vorhandenen Spiele auf der
+  Platform ein Zeit intensives Unterfangen ist, sollte als n"achstes "uber eine
+  Over-the-Air Updatefunktion f"ur die komplette Applikation oder zumindest
+  f"ur die Spielebibliothek nachgedacht werden. F"ur RIOT selbst ist gerade ein
+  OTA-Update in Entwicklung das genutzt werden kann.\\\\
   \begin{itemize}
     \item Spiele
     \begin{enumerate}
