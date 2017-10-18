@@ -203,23 +203,29 @@
 
 \section{Stand der Umsetzung}
   \label{sec:status}
-  \subsection{Stand}
-  Kommunikation zwischen Knoten
-  Hardware $(H-brücke, Motor, Multiplexer, Buttons, LCD, LED-Stripe )$
-  Treiber
-  Basisspiel
   \subsection{Probleme}
-  LEDs von Buttons fehlen
-  Kommunikation mit Raspi/Website/Coap-Gateway
-  LCD Kontrast
-  LCD Backlight
+    \begin{itemize}
+      \item LEDs von Buttons fehlen
+      \item Kommunikation Raspi
+        \begin{itemize}
+          \item konsistente API zu netzwerkcode, keine trennung von businnes zu netzwerk
+          \item netwzwerk unreliable
+          \item integration in team2 ungen"ugend
+        \end{itemize}
+      \item LCD Kontrast, Backlight, Wackelkontakt
+      \item Kein dokumentiertes Board layout
+    \end{itemize}
   \subsection{Rückblick auf Zeitplan}
-  Zeitplan nicht eingehalten
-  Hardware hat mehr Zeit gekostet als erwartet
-  Probleme mit Netzwerkkommunikation
-  Gar nicht nach Magnetbändern gesucht
-  Spiel runterschreiben ging am Ende dann schnell
-  Entwurf Poster war schnell aber nicht so früh wie geplant
+    \begin{itemize}
+      \item Zeitplan nicht eingehalten, warum?
+      \item Hardware hat mehr Zeit gekostet als erwartet
+      \item Probleme mit Netzwerkkommunikation
+      \item Gar nicht nach Magnetbändern gesucht
+      \item Spiel runterschreiben ging am Ende dann schnell, erahrungswerte haben gefehlt
+      \item mangelhafte schnittstellen definition zwischen Application und Netzwerk stack
+      \item trotz regelmaessiger persoenlicher treffen keine stand-up-meeting, somit mangelndes wissen "uber probleme und fortschritte der gruppenmitglieder
+      \item Entwurf Poster war schnell aber nicht so früh wie geplant
+    \end{itemize}
 
 \section{Weiterführende Arbeit}
   \label{sec:further}
