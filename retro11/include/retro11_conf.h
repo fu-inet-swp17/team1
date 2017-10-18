@@ -63,8 +63,7 @@ extern "C" {
 #define CONF_DISPLAY_LED2         (55)
 /** @} */
 
-//#define MACHINE "M0" //insert machine identifier
-
+#define MACHINE "M0" //insert machine identifier
 #define RESULT ".re"
 #define NAME ".na"
 #define START ".st"
