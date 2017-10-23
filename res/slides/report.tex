@@ -36,21 +36,21 @@
   Das Ziel dieses Projektes ist es, die \textit{PDP11} im Foyer des
   Informatikinstituts der FU Berlin wieder mit Leben zu f"ullen und sie nicht
   nur als leere H"ulle zu pr"asentieren. Uns ist es dabei besonders wichtig
-  unsere Mitstudierende zum eigenst"andigen entdecken der \textit{PDP11} zu
-  animieren.  Daher haben wir die bestehende Bandlaufwerke mit einem modernen
-  Mikrocontroller ausgestattet, der von nun an die Ansteuerung "ubernimmt.
-  Dieser Mikrocontroller, die vorhandene Bandlaufwerke, ein paar weitere LEDs
-  und ein LCD erm"oglichen es uns die \textit{PDP11} in Arcade "ahnliche
-  Spieleautomaten umzuwandeln.\\
+  unsere Mitstudierenden zum eigenst"andigen entdecken der \textit{PDP11} zu
+  animieren.  Daher haben wir die bestehenden Bandlaufwerke mit einem modernen
+  Mikrocontroller ausgestattet, der von nun an die Ansteuerung der Hardware
+  "ubernimmt.  Dieser Mikrocontroller, die vorhandenen Bandlaufwerke,
+  zusätzliche LEDs und ein LCD erm"oglichen es uns die \textit{PDP11} in Arcade
+  "ahnliche Spieleautomaten umzuwandeln.\\ % TODO Singular (TEILE) und Plural
+  %(PDP11) in einem Satz
   Ziel dieses Projektes ist es, die Hardware fertigzustellen und ein
-  Beispielspiel zu implementieren, das es zwei Spieler\_innen erm"oglicht sich
-  in ihrer Reaktionszeit zu messen.\\
-  Als erstes werden wir einen "Uberblick "uber die verwendete Hardware geben
-  und auf die Besonderheiten und Probleme bei der Ansteuerung dieser eingehen.
-  Danach gehen wir auf die Software selbst und die Kommunikation unterhalb der
-  Knoten ein. Abschliessend ziehen wir ein vergleichendes Resume zwischen der
-  Planung und dem Erfolg des Projekts und bieten einen Ausblick auf
-  weiteref"uhrende Ideen.
+  Beispielspiel zu implementieren, das es zwei Spielenden erm"oglicht sich in
+  ihrer Reaktionszeit zu messen.\\ Als erstes werden wir einen "Uberblick "uber
+  die verwendete Hardware geben und auf die Besonderheiten und Probleme bei der
+  Ansteuerung dieser eingehen.  Danach gehen wir auf die Software selbst und
+  die Kommunikation zwischen den Knoten ein. Abschließend ziehen wir ein
+  vergleichendes R\'{e}sum\'{e} zwischen der Planung und dem Erfolg des
+  Projekts und bieten einen Ausblick auf weiterf"uhrende Ideen.
 
 \section{Hardware}
   \label{sec:hardware}
@@ -59,21 +59,20 @@
     Als Basis f"ur unser Projekt dient die im Foyer stehende und leider nicht
     mehr funktionst"uchtige \textit{PDP11}. Im besonderen haben wir uns f"ur
     die zwei Bandlaufwerke der \textit{PDP11} interessiert, da sie jeweils neun
-    Taster und zwei einzeln ansteuerbare Motoren bieten. Die Motoren k"onnen im
-    und gegen den Uhrzeigersinn drehen und bieten durch die
+    Taster und zwei einzeln ansteuerbare Motoren besitzen. Die Motoren k"onnen
+    im und gegen den Uhrzeigersinn drehen und bieten durch die
     Ger"auschentwicklung sowie ihre Bewegung einen guten Ausl"oser f"ur unser
-    Reaktionsspiel.\\
-    Von den neun Tastern sind zwar alle mit unserem Mikrocontroller verbunden
-    und auch per Software ansteuerbar, allerdings sind derzeit nur die
-    ersten drei Taster in Verwendung.
+    Reaktionsspiel.\\ Von den neun Tastern sind zwar alle mit unserem
+    Mikrocontroller verbunden und auch per Software ansteuerbar, allerdings
+    sind derzeit nur die ersten drei Taster in Verwendung.
 
   \subsection{zus"atzliche Hardware}
     \label{sec:hardware_additional}
     F"ur dieses Projekt wurde uns ein \textit{SAMR21 Xpro} zur Verf"ugung
     gestellt. Der \textit{SAMR21 Xpro} ist ein Evaluationsboard f"ur den
     \textit{ATSAMR21G18A}. Das Board bietet integrierte Funkunterst"utzung zur
-    Kommunikation und durch den \textit{Cortex-M0+} auch ausreichend Leistung um
-    unser Projekt umzusetzen. Im Zuge der Softwareentwicklung sind wir nicht
+    Kommunikation und durch den \textit{Cortex-M0+} auch ausreichend Leistung
+    um unser Projekt umzusetzen. Im Zuge der Softwareentwicklung sind wir nicht
     an die Leistungsgrenzen des Chips gesto"sen, allerdings bietet er nicht
     gen"ugend I/O-Pins zur Ansteuerung der gesamten Peripherie.\\
     \begin{wrapfigure}{r}{0.5\textwidth}
@@ -82,16 +81,17 @@
       \includegraphics[scale=0.05]{Platine.jpg}
       \captionof{figure}{Mikrocontroller, Multiplexer und H-Br"ucke}
     \end{wrapfigure}
-    In Ermangelung ausreichender I/O-Pins haben wir uns dazu entschieden die Taster
-    "uber den \textit{S74LS151} anzusteuern. Der \textit{S74LS151} ist ein 8Bit
-    Multiplexer und erm"oglicht es uns alle Taster anzusteuern, allerdings kann
-    nur ein Taster gleichzeitig mit einem Interrupt belegt werden.\\
-    Zur Beleuchtung der Bandlaufwerke haben wir RGB-LED-Streifen verbaut. Diese
-    LED-Streifen basieren auf dem \textit{WS2811}, der jeweils eine LED steuern
-    und bis zu 1024mal in Reihe geschaltet werden kann um komplette
-    Animationen zu steuern. Die existierenden Gl"uhlampen der Taster wollten
-    wir ebenfalls durch LED's ersetzen die auf dem \textit{WS2811} basieren,
-    allerdings gab es hier Lieferprobleme.\\
+    In Ermangelung ausreichender I/O-Pins haben wir uns dazu entschieden die
+    Taster "uber den \textit{S74LS151} zu verwalten. Der \textit{S74LS151} ist
+    ein \( 8 bit \) Multiplexer und erm"oglicht es uns alle Taster mittels
+    Polling abzufragen, allerdings kann immer nur ein Taster gleichzeitig mit
+    einem Interrupt belegt werden.\\ Zur Beleuchtung der Bandlaufwerke haben
+    wir RGB-LED-Streifen verbaut. Diese LED-Streifen sind kompatibel zu dem
+    \textit{WS2811}, der jeweils eine LED steuern und bis zu 1024 mal in Reihe
+    geschaltet werden kann um komplette Animationen darzustellen. Die
+    existierenden Gl"uhlampen der Taster wollten wir ebenfalls durch LED's
+    ersetzen die auf dem \textit{WS2811} basieren, allerdings gab es hier
+    Lieferprobleme.\\
     \begin{wrapfigure}{r}{0.5\textwidth}
       \centering
       \label{figure:Bandlaufwerke}
@@ -100,42 +100,45 @@
     \end{wrapfigure}
     Zur Ansteuerung der Bandlaufwerkmotoren verwenden wir die doppel H-Br"ucke
     \textit{L298-H}. Diese ben"otigt als einziges Modul eine 12V
-    Versorgungsspannung.\\
-    F"ur zuk"unftige Men"uf"uhrung, Eingabe der Nicknames und weiteres
-    visuelles Feedback haben wir ein 128x64 Pixel LCD des Typs
-    \textit{DOGL128B-6} verbaut. Dieses Display ist ein Set aus Display und
-    Controller und kann einfach "uber das SPI Protokoll verwendet werden. Um
-    Kosten an der Hardware zu sparen haben wir uns dazu entschieden nicht
-    vorgefertigte Backlight dazu zukaufen, sondern jeweils zwei \textit{WS2811}
-    RGB-LEDs f"ur die Hintergrundbeleuchtung zu verwenden.\\
-    Unsere verbaute Hardware brauch eine \( 3,3V \), \( 5V \) und \( 12V \)
-    Spannungsversorgung und anstatt selber ein Netzteil zu bauen oder zu kaufen
-    haben wir ein ATX-Netzteil aus Restbest"anden f"ur beide Bandlaufwerke
-    benutzt.
+    Versorgungsspannung.\\ F"ur zuk"unftige Men"uf"uhrung, Eingabe der
+    Nicknames und weiteres visuelles Feedback haben wir ein 128x64 Pixel LCD
+    des Typs \textit{DOGL128B-6} verbaut. Dieses Display ist ein Set aus
+    Display und Controller und kann einfach "uber das SPI Protokoll verwendet
+    werden. Um Kosten an der Hardware zu sparen haben wir uns dazu entschieden
+    kein zugehöriges Backlight dazu zukaufen, sondern jeweils zwei
+    \textit{WS2811} RGB-LEDs f"ur die Hintergrundbeleuchtung zu verwenden.\\
+    Unsere verbaute Hardware braucht eine \( 3,3 V \), \( 5 V \) und \( 12 V \)
+    Spannungsversorgung und anstatt selbst ein Netzteil zu bauen
+    %TODO dürfen wir eh nicht
+    oder zu kaufen haben wir ein ATX-Netzteil aus Restbest"anden f"ur beide
+    Bandlaufwerke benutzt.
 
   \subsection{Treiber}
     \label{sec:hardware_driver}
     Nach der Entwicklung der Hardwareplattform haben wir f"ur jede Peripherie
     einen Teiber entwickelt, da diese noch nicht von RIOT selbst unterstützt
     wurden. Jeder Treiber ist entsprechend den von RIOT angebotenen
+    %TODO angelehnt an Beispieltreiber
     Beispieltreibern implementiert. Die Treiberimplementierung war für alle
-    Peripheriegeräte außer dem WS2811 unkompliziert. Der WS2811 bietet einen
-    digitalen Eingang zum Empfang von Farbinformationen und einen digitalen
-    Ausgang zum Senden von Farbinformationen an den nächsten WS2811 in Reihe.
-    Zum Schluss steuert jede WS2811 eine LED und bis zu 1024 WS2811 können
-    miteinander verkettet werden, um ganze LED-Arrays zu steuern. Da der WS2811
-    nur ein OneWire-Protokoll und keine zusätzliche Taktung anbietet, benötigt
-    er für die Unterscheidung zwischen 0 und 1 in seinem Protokoll harte
-    Timings. Für unser Projekt haben wir zwei verschiedene WS2811 LED-Sets
-    gekauft. Das erste ist ein bereits montierter LED-Streifen, der mit unserem
-    Treiber tadellos funktioniert und das zweite ist ein Set von separaten
-    Chips und LEDs, die selbst zusammenzubauen sind. Das zweite Set weigerte
-    sich, mit unserem Treiber zu arbeiten und nach mehrtägigem Debugging
-    stellte sich heraus, dass der Controller eine gemeinsame Annode benötigt,
-    aber die LEDs, die wir erhalten haben, boten eine gemeinsame Kathode.
-    Leider war der Internetversand, bei dem wir die LEDs gekauft haben, nicht
-    in der Lage, die richtigen LEDs rechtzeitig zur Verfügung
-    zu stellen, um das Projekt komplett abzuschließen.
+    Peripheriegeräte außer dem \textit{WS2811} unkompliziert. Der
+    \textit{WS2811} nutzt eine Schieberegisterarchitektur.  "Uber einen
+    digitalen Eingang zum Empfang und einen digitalen Ausgang zum Senden an den
+    nächsten \textit{WS2811} in Reihe werden je LED \( 24 bit\) an
+    Farbinformationen "ubertragen.  Jeder \textit{WS2811} steuert eine LED und
+    bis zu 1024 \textit{WS2811} können miteinander verkettet werden, um ganze
+    LED-Arrays zu steuern. Da der WS2811 nur ein OneWire-Protokoll und keine
+    zusätzliche Taktung anbietet, benötigt er für die Unterscheidung zwischen 0
+    und 1 in seinem Protokoll harte Timings. Für unser Projekt haben wir zwei
+    verschiedene \textit{WS2811} kompatible LED-Sets gekauft. Das erste ist ein
+    bereits montierter LED-Streifen, der mit unserem Treiber tadellos
+    funktioniert und das zweite ist ein Set von separaten Chips und LEDs, die
+    selbst zusammenzubauen sind. Das zweite Set weigerte sich, mit unserem
+    Treiber zu arbeiten und nach mehrtägigem Debugging stellte sich heraus,
+    dass der Controller eine gemeinsame Annode benötigt, aber die LEDs, die wir
+    erhalten haben, boten eine gemeinsame Kathode.  Leider war der
+    Internetversand, bei dem wir die LEDs gekauft haben, nicht in der Lage, die
+    richtigen LEDs rechtzeitig zur Verfügung zu stellen, um das Projekt
+    komplett abzuschließen.
 
 \section{Retro11}
   \label{sec:retro11}
@@ -153,64 +156,60 @@
     \label{sec:retro11_design}
     Als erstes initialisiert \textit{Retro11} die gesamte Peripherie und
     startet bis zu f"unf Threads, die "uber eine Message-Queue sowie einen
-    geteilten Status kommunizieren.\\
-    Der erste Thread ist der \textit{MotorController}, der sich um die
-    asynchrone Steurung der beiden Gleichstromotoren k"ummert. Dieser Thread
-    akzeptiert Nachrichten, die die Geschwindigkeit und die Laufdauer der
-    Motoren enth"alt. Dieser Thread ist essentiel f"ur das Reaktionsspiel, da
-    die Motor sonst nicht asynchron zur Benutzereingabe angehalten werden
-    k"onnten.\\
-    Der zweite Thread ist der \textit{COAPServer}, der Anfragen des
-    \textit{Game-Masters} erwartet und dann durch eine geteilte Status Variable
-    die Game-Loop des Reaktionsspielthreads kontrolliert.\\
-    Der dritte Thread ist das Reaktionsspiel, das in einer endlosen GameLoop
-    l"auft und durch die mit dme \textit{CoapServer} geteilte Status Variable
-    kontrolliert wird. Weiterhin kommunizert dieser Thread wie oben erw"ahnt
-    mit dem \textit{MotorController} und bildet das Herzst"uck von
-    \textit{Retro11}.\\
+    geteilten Status kommunizieren.\\ Der erste Thread ist der
+    \textit{MotorController}, der sich um die asynchrone Steurung der beiden
+    Gleichstromotoren k"ummert. Dieser Thread akzeptiert Nachrichten, die die
+    Geschwindigkeit und die Laufdauer der Motoren enth"alt. Dieser Thread ist
+    essentiel f"ur das Reaktionsspiel, da die Motor sonst nicht asynchron zur
+    Benutzereingabe angehalten werden k"onnten.\\ Der zweite Thread ist der
+    \textit{COAPServer}, der Anfragen des \textit{Game-Masters} erwartet und
+    dann durch eine geteilte Status Variable die Game-Loop des
+    Reaktionsspielthreads kontrolliert.\\ Der dritte Thread ist das
+    Reaktionsspiel, das in einer endlosen GameLoop l"auft und durch die mit dme
+    \textit{CoapServer} geteilte Status Variable kontrolliert wird. Weiterhin
+    kommunizert dieser Thread wie oben erw"ahnt mit dem
+    \textit{MotorController} und bildet das Herzst"uck von \textit{Retro11}.\\
     Der vierte Thread stellt eine Diagnose-Shell "uber den USB-Anschluss des
     \textit{SAMR21 Xpro} bereit. In dieser Shell sind spezielle
     Hardware-Diagnose Befehle enthalten und au"serdem werden Debuginformation
-    "uber den derzeitigen Programmverlauf ausgegeben.\\
-    Der f"unfte und letzte Thread ist nur auf einem der beiden Knoten vorhanden
-    und stellt den \textit{Game-Master} zur Verf"ugung. Dieser kommuniziert mit
-    den beiden \textit{CoapServern} und kontrolliert den gesamten Spielablauf
-    zwischen den beiden Knoten. Der \textit{GameMaster} ist kommuniziert
-    au"serdem mit dem RasperryPi von \textit{Team2} und ver"offentlich die
-    Spielergebnisse.
+    "uber den derzeitigen Programmverlauf ausgegeben.\\ Der f"unfte und letzte
+    Thread ist nur auf einem der beiden Knoten vorhanden und stellt den
+    \textit{Game-Master} zur Verf"ugung. Dieser kommuniziert mit den beiden
+    \textit{CoapServern} und kontrolliert den gesamten Spielablauf zwischen den
+    beiden Knoten. Der \textit{GameMaster} ist kommuniziert au"serdem mit dem
+    RasperryPi von \textit{Team2} und ver"offentlich die Spielergebnisse.
 
   \subsection{Reaktionsspiel}
     \label{sec:retro11_game}
-    F"ur dieses Spiele haben sich zwei Spieler\_innen von einem jeweiligen
-    Bandlaufwerk zu befinden. Zuerst werden beide aufgefordert einen Nickname
-    einzugeben, der dann an den \textit{GameMaster} geschickt wird. Sobald
-    beide Spieler\_innen ihren Namen eingegeben haben, sendet der
-    \textit{GameMaster} den Start-Befehl und die Motoren beginnen sich zu
-    drehen. Nach einer zuf"allig gew"ahlten Zeit h"oren beide Motoren auf zu
-    drehen und die Spieler\_innen m"ussen m"oglichst schnell den
-    Best"atigen-Knopf dr"ucken. Die Zeit zwischen dem Anhalten der Motoren und
-    dem Dr"ucken des Knopfes ist die Reaktionszeit und wird von beiden Knoten
-    an den \textit{GameMaster} geschickt. Dieser entscheidet nun welcher der
-    beiden Spieler\_innen gewonnen hat und ver"offentlich das Ergebniss in der
-    Highscore. Den Highscore k"onnen Sie in der Webapplikation von
-    \textit{Team2} des diesj"ahrigen Softwareprojekts nachschlagen.
+    F"ur dieses Spiele befinden sich zwei Spielende vor je einem Bandlaufwerk.
+    Zuerst werden beide aufgefordert einen Nickname einzugeben, der dann an den
+    \textit{GameMaster} geschickt wird. Sobald beide Spielenden ihren Namen
+    eingegeben haben, sendet der \textit{GameMaster} den Start-Befehl und die
+    Motoren beginnen sich zu drehen. Nach einer zuf"allig gew"ahlten Zeit
+    h"oren beide Motoren auf zu drehen und die Spielenden m"ussen m"oglichst
+    schnell den Best"atigen-Knopf dr"ucken. Die Zeit zwischen dem Anhalten der
+    Motoren und dem Dr"ucken des Knopfes ist die Reaktionszeit und wird von
+    beiden Knoten an den \textit{GameMaster} geschickt. Dieser entscheidet nun
+    welcher der beiden Spielenden gewonnen hat und ver"offentlich das Ergebniss
+    in der
 
   \subsection{Netzwerkkommunikation}
     \label{sec:net}
-    Die Kommunikation zwischen den Plattformen erfolgt über das RESTful Constrained
-    Application Protocol, CoAP, das Nachrichten über UDP und IPv6 sendet, wie in
-    Abbildung \ref{fig:seq_diagram} . Ein Mikrocontroller führt eine
-    Client-Applictation aus, die das Spiel steuert. Die benötigten Informationen
-    werden von einer Server-Anwendung bereitgestellt, die auf jedem Mikrocontroller
-    ausgeführt wird. Abhängig vom Spielstatus fragt der Client die Ressource mit
-    den erforderlichen Informationen beider Server mit einer Get-Methode ab, bis
-    die Server die Informationen bereitstellen, um zur nächsten Stufe überzugehen.
-    Im ersten Zustand fordert der Client die Nicknamen des Spielers an, fordert
-    dann das eigentliche Reaktionsspiel auf, im zweiten Zustand zu starten, fordert
-    die Reaktionszeit im dritten Zustand an und fordert jede Maschine auf, sich
-    anzeigen zu lassen, ob sie im letzten Zustand gewonnen oder verloren hat.
-    Zusätzlich verfügen beide Server über eine Ressource, die auf Wunsch von team2
-    Highscore-Informationen im SenML-Format bereitstellt.
+    Die Kommunikation zwischen den Plattformen erfolgt über das RESTful
+    Constrained Application Protocol, CoAP, das Nachrichten über UDP und IPv6
+    sendet, wie in Abbildung \ref{fig:seq_diagram} . Ein Mikrocontroller führt
+    eine Client-Application aus, die das Spiel steuert. Die benötigten
+    Informationen werden von einer Server-Anwendung bereitgestellt, die auf
+    jedem Mikrocontroller ausgeführt wird. Abhängig vom Spielstatus fragt der
+    Client die Ressource mit den erforderlichen Informationen beider Server mit
+    einer Get-Methode ab, bis die Server die Informationen bereitstellen, um
+    zur nächsten Stufe überzugehen.  Im ersten Zustand ruft der Client die
+    Nicknamen der Spielenden ab, fordert dann das Reaktionsspiel auf, im
+    zweiten Zustand zu starten, erh"alt im dritten Zustand die Reaktionszeit
+    und fordert anschließend jede Maschine auf, anzuzeigen, ob der Spielende
+    gewonnen oder verloren hat.  Zusätzlich verfügen beide Server über eine
+    Ressource, die auf Wunsch von team2 Highscore-Informationen im SenML-Format
+    bereitstellt.
     \begin{figure}[h]
       \centering
       \includegraphics[scale=0.1]{team1_kommunikation.png}
@@ -246,27 +245,26 @@
 \section{Weiterführende Arbeit}
   \label{sec:further}
   Zuerst gilt es die bis jetzt nicht gelieferten RGB-LED's wie in Abschnitt
-  \ref{sec:hardware_additional} beschrieben in die Taster einzubauen. Bis
-  jetzt werden die zu dr"uckenden Taster nicht visuel hervorgehoben, sodass
-  f"ur Nutzer nicht offensichtlich ist welcher Taster welche Funktionsbelegung
-  that.\\
-  Zur weiteren Versch"onerung der Bandlaufwerke sollten die fehlenden
-  Tasterfront gedruckt werden. Ein druckfertiges 3D-Modell ist schon im
+  \ref{sec:hardware_additional} beschrieben in die Taster einzubauen. Bis jetzt
+  werden die zu dr"uckenden Taster nicht visuell hervorgehoben, sodass f"ur
+  Nutzer nicht offensichtlich ist welcher Taster welche Funktionsbelegung
+  hat.\\ Zur weiteren Versch"onerung der Bandlaufwerke sollten die fehlenden
+  Tasterfronten gedruckt werden. Ein druckfertiges 3D-Modell ist schon im
   Repository vorhanden. Im Zuge dessen sollten auch die Motoren gereinigt
   werden, da sie sich zur Zeit erst bei einer verh"altnism"a"sig hohen
   Anlaufspannung in Bewegung setzen. Dies w"urde Lautst"arkeentwicklung und
-  Stromverbrauch optimieren.\\
-  Im Bezug auf \textit{Retro11} sollte als erstes ein Framework entwickelt
-  werden in dem weitere Spiele implementiert werden k"onnen.
-  Eine M"oglichkeit besteht darin einen Lua-Interpreter in \textit{Retro11}
-  einzubetten. znteressierte Studierende sind dann in der Lage Spiele in einer
-  Hochsprache gegen eine konsistente API zu entwickeln und m"ussen nicht
-  notwendigerweise mit RIOT vertraut sein. Insbesondere f"ur Programmieranf"anger
-  bietet das einen niederschwelligen Einstieg in eingebettete Systeme.\\
-  Da regelm"a"sige manuelle Updates der vorhandenen Spiele auf der
-  Platform ein zeitintensives Unterfangen ist, sollte als n"achstes "uber eine
-  Over-the-Air Updatefunktion f"ur die komplette Applikation oder zumindest
-  f"ur die Spielebibliothek nachgedacht werden. F"ur RIOT selbst ist gerade ein
-  OTA-Update in Entwicklung das nach Fertigstellung genutzt werden kann.\\\\
+  Stromverbrauch optimieren.\\ Im Bezug auf \textit{Retro11} sollte als erstes
+  ein Framework entwickelt werden in dem weitere Spiele implementiert werden
+  k"onnen.  Eine M"oglichkeit besteht darin einen Lua-Interpreter in
+  \textit{Retro11} einzubetten. interessierte Studierende sind dann in der Lage
+  Spiele in einer Hochsprache gegen eine konsistente API zu entwickeln und
+  m"ussen nicht notwendigerweise mit RIOT vertraut sein. Insbesondere f"ur
+  Programmierneulinge bietet das einen niederschwelligen Einstieg in
+  eingebettete Systeme.\\ Da regelm"a"sige manuelle Updates der vorhandenen
+  Spiele auf der Plattform ein zeitintensives Unterfangen ist, sollte als
+  n"achstes "uber eine Over-the-Air Updatefunktion f"ur die komplette
+  Applikation oder zumindest f"ur die Spielebibliothek nachgedacht werden. F"ur
+  RIOT selbst ist gerade ein OTA-Update in Entwicklung das nach Fertigstellung
+  genutzt werden kann.\\\\
 
 \end{document}
