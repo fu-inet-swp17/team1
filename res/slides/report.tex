@@ -81,7 +81,7 @@
       \includegraphics[scale=0.05]{Platine.jpg}
       \captionof{figure}{Mikrocontroller, Multiplexer und H-Br"ucke}
     \end{wrapfigure}
-    In Ermangelung ausreichender I/O-Pins haben wir uns dazu entschieden die
+    In Ermangelung ausreichender I/O-Pins haben wir uns deshalb entschieden die
     Taster "uber den \textit{S74LS151} zu verwalten. Der \textit{S74LS151} ist
     ein \( 8 bit \) Multiplexer und erm"oglicht es uns alle Taster mittels
     Polling abzufragen, allerdings kann immer nur ein Taster gleichzeitig mit
@@ -125,7 +125,7 @@
     digitalen Eingang zum Empfang und einen digitalen Ausgang zum Senden an den
     nächsten \textit{WS2811} in Reihe werden je LED \( 24 bit\) an
     Farbinformationen "ubertragen.  Jeder \textit{WS2811} steuert eine LED und
-    bis zu 1024 \textit{WS2811} können miteinander verkettet werden, um ganze
+    bis zu 1024 \textit{WS2811} können so miteinander verkettet werden, um ganze
     LED-Arrays zu steuern. Da der WS2811 nur ein OneWire-Protokoll und keine
     zusätzliche Taktung anbietet, benötigt er für die Unterscheidung zwischen 0
     und 1 in seinem Protokoll harte Timings. Für unser Projekt haben wir zwei
@@ -145,28 +145,28 @@
   \textit{Retro11} ist der Name der RIOT-Anwendung die auf dem \textit{SAMR21
   Xpro} l"auft. Die Anwendung besteht aus drei Teilen. Als erstes ist in
   \textit{Retro11} das Reaktionsspiel implementiert, das auch die Kontrolle
-  "uber die gesamte Preipherie ben"otigt. Als zweites enth"alt jeder
+  "uber die gesamte Peripherie ben"otigt. Als zweites enth"alt jeder
   \textit{Retro11} Knoten einen COAP-Server der Anfragen vom
   \textit{Game-Master}-Knoten entgegennimmt. Als drittes und letztes l"auft auf
-  einem Knoten zus"atzlich den \textit{Game-Master}-Knoten, der die ablaufenden
+  einem Knoten zus"atzlich der \textit{Game-Master}-Knoten, der die ablaufenden
   Spiele koordiniert und die Ergebnisse an den RasperryPi von \textit{Team2}
   ver"offentlicht.
 
   \subsection{Anwendungsdesign}
     \label{sec:retro11_design}
     Als erstes initialisiert \textit{Retro11} die gesamte Peripherie und
-    startet bis zu f"unf Threads, die "uber eine Message-Queue sowie einen
-    geteilten Status kommunizieren.\\ Der erste Thread ist der
+    startet bis zu f"unf Threads, die "uber eine Message-Queue sowie eine
+    geteilte Statusvariable kommunizieren.\\ Der erste Thread ist der
     \textit{MotorController}, der sich um die asynchrone Steurung der beiden
     Gleichstromotoren k"ummert. Dieser Thread akzeptiert Nachrichten, die die
     Geschwindigkeit und die Laufdauer der Motoren enth"alt. Dieser Thread ist
-    essentiel f"ur das Reaktionsspiel, da die Motor sonst nicht asynchron zur
+    essentiel f"ur das Reaktionsspiel, da die Motoren sonst nicht asynchron zur
     Benutzereingabe angehalten werden k"onnten.\\ Der zweite Thread ist der
     \textit{COAPServer}, der Anfragen des \textit{Game-Masters} erwartet und
     dann durch eine geteilte Status Variable die Game-Loop des
     Reaktionsspielthreads kontrolliert.\\ Der dritte Thread ist das
-    Reaktionsspiel, das in einer endlosen GameLoop l"auft und durch die mit dme
-    \textit{CoapServer} geteilte Status Variable kontrolliert wird. Weiterhin
+    Reaktionsspiel, das in der Endlosschleife GameLoop l"auft und durch die mit dem
+    \textit{CoapServer} geteilte Statusvariable kontrolliert wird. Weiterhin
     kommunizert dieser Thread wie oben erw"ahnt mit dem
     \textit{MotorController} und bildet das Herzst"uck von \textit{Retro11}.\\
     Der vierte Thread stellt eine Diagnose-Shell "uber den USB-Anschluss des
@@ -176,7 +176,7 @@
     Thread ist nur auf einem der beiden Knoten vorhanden und stellt den
     \textit{Game-Master} zur Verf"ugung. Dieser kommuniziert mit den beiden
     \textit{CoapServern} und kontrolliert den gesamten Spielablauf zwischen den
-    beiden Knoten. Der \textit{GameMaster} ist kommuniziert au"serdem mit dem
+    beiden Knoten. Der \textit{GameMaster} kommuniziert au"serdem mit dem
     RasperryPi von \textit{Team2} und ver"offentlich die Spielergebnisse.
 
   \subsection{Reaktionsspiel}
@@ -187,11 +187,12 @@
     eingegeben haben, sendet der \textit{GameMaster} den Start-Befehl und die
     Motoren beginnen sich zu drehen. Nach einer zuf"allig gew"ahlten Zeit
     h"oren beide Motoren auf zu drehen und die Spielenden m"ussen m"oglichst
-    schnell den Best"atigen-Knopf dr"ucken. Die Zeit zwischen dem Anhalten der
-    Motoren und dem Dr"ucken des Knopfes ist die Reaktionszeit und wird von
+    schnell den Best"atigen-Knopf dr"ucken. Die Zeit zwischen dem Anhalten
+    der Motoren und dem Dr"ucken des Knopfes ist die Reaktionszeit und wird von
     beiden Knoten an den \textit{GameMaster} geschickt. Dieser entscheidet nun
     welcher der beiden Spielenden gewonnen hat und ver"offentlich das Ergebniss
-    in der
+    in der Highscore. Den Highscore k"onnen Sie in der Webapplikation von
+    \textit{Team2} des diesj"ahrigen Softwareprojekts nachschlagen.
 
   \subsection{Netzwerkkommunikation}
     \label{sec:net}
