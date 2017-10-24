@@ -220,28 +220,48 @@
 \section{Stand der Umsetzung}
   \label{sec:status}
   \subsection{Probleme}
-    \begin{itemize}
-      \item LEDs von Buttons fehlen
-      \item Kommunikation Raspi
-        \begin{itemize}
-          \item konsistente API zu netzwerkcode, keine trennung von businnes zu netzwerk
-          \item netwzwerk unreliable
-          \item integration in team2 ungen"ugend
-        \end{itemize}
-      \item LCD Kontrast, Backlight, Wackelkontakt
-      \item Kein dokumentiertes Board layout
-    \end{itemize}
-  \subsection{Rückblick auf Zeitplan}
-    \begin{itemize}
-      \item Zeitplan nicht eingehalten, warum?
-      \item Hardware hat mehr Zeit gekostet als erwartet
-      \item Probleme mit Netzwerkkommunikation
-      \item Gar nicht nach Magnetbändern gesucht
-      \item Spiel runterschreiben ging am Ende dann schnell, erahrungswerte haben gefehlt
-      \item mangelhafte schnittstellen definition zwischen Application und Netzwerk stack
-      \item trotz regelmaessiger persoenlicher treffen keine stand-up-meeting, somit mangelndes wissen "uber probleme und fortschritte der gruppenmitglieder
-      \item Entwurf Poster war schnell aber nicht so früh wie geplant
-    \end{itemize}
+  In der aktuellen Implementierung bleiben noch ein paar Vorhaben unvollendet.
+  Zum einen fehlen wie bereits erw"ahnt die passenden LEDs zu den
+  \textit{WS2811} Controllern für die Kn"opfe. Weiterhin gibt es eine
+  ungekl"arte Fehlerquelle im Zusammenhang mit einem der LCD. Hier scheint
+  ein Wackelkontakt oder falsch eingestellter Kontrast zu einem unlesbaren
+  Display zu f"uhren. Da das gleiche Programm auf dem anderen LCD zu einer
+  Ausgabe f"uhrt erwarteten wir keinen Softwarebug. Das Ausmessen der
+  Stromleitungen und das R"uckverfolgen der GPIO-Portleitungen hat allerdings
+  keine Fehlerursache offenbart. Desweiteren existiert kein Boardlayout von dem
+  Mainboard, welches die einzelnen Hardwarebausteine verbindet.\\ Die
+  Netzwerkkommunikation ist derzeit unzuverla"ssig. Verlorene Pakete können in
+  gewissen Situationen zu Deadlocks f"uhren.\\
+  % TODO: konsistente API zu netzwerkcode, keine trennung von businnes zu
+  % netzwerk
+  Zus"atzlich zu den offenen Problemen an unserem Projekt ist die Integration
+  in das Softwareprojekt von \textit{Team2} ungen"ugend. Die Schnittstelle zur
+  "Ubertragung der Highscoredaten wurde nur grob kommuniziert, nicht getestet
+  und ist unseres Wissens nach nicht in der aktuellen Version von
+  \textit{Team2} eingebunden.
+  \subsection{R"uckblick auf Zeitplan}
+  Der urspr"ungliche Zeitplan konnte aus Gr"unden nicht eingehalten werden.
+  % TODO: Aus welchen Gründen?
+  Die Entwicklung von Hardwarel"osungen und das Umsetzen dieser L"osungen haben
+  ein Vielfaches der geplanten Zeit in Anspruch genommen. Zudem kostete das
+  Debugging der \textit{WS2811} und der zugeh"origen LEDs unerwartet viel Zeit.
+  Dies war besonders schwer einzusch"atzen, da die \textit{WS2811} kompatiblen
+  LED-Streifen mit der gleichen Software funktionierten und so die Fehlersuche
+  vielversprechend schien. Leider konnte dennoch der Fehler wie erw"ahnt nicht
+  behoben werden. Weitere Ursache f"ur die Verz"ogerung waren Probleme mit der
+  Netzwerkkommunikation und der langwierigen Integration der
+  Netzwerkarchitektur in die "ubrige Projektstruktur, was letzendlich auch zu
+  einer mangelhaften Schnittstellendefinition zwischen Applikation und
+  Netzwerkarchitektur f"uhrte.\\ Als Ergebnis dieser Verz"ogerungen haben wir
+  gewisse Vorhaben nicht umgesetzt, so haben wir zum Beispiel nicht nach
+  passenden Magnetb"andern gesucht.\\ Das Implementieren des Spiels ging dann
+  am Ende erwartungsgem"aß schnell und auch der Entwurf des Posters war
+  entsprechend dem Zeitplan fr"uh beendet.\\ Eine Hauptursache f"ur das
+  Nichteinhalten des Zeitplans waren fehlende Gespr"ache über den aktuellen
+  Stand der Einzelaufgaben. So fehlte es der Gruppe an Wissen über den
+  Fortschritt der Gruppenmitglieder und Probleme konnten nicht gemeinsam
+  gel"ost werden.  Grund daf"ur sind aus unserer Sicht Erfahrungsmangel in
+  der Projektarbeit und eine fehlende Gruppenstruktur.
 
 \section{Weiterführende Arbeit}
   \label{sec:further}
