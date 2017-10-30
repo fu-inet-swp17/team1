@@ -21,7 +21,9 @@
 \usepackage{wrapfig}
 \usepackage{caption}
 %% Bibtex
-\usepackage[backend=biber,style=authoryear,autocite=footnote]{biblatex}
+\usepackage[backend=biber,style=authortitle]{biblatex}
+
+\bibliography{report}
 
 \title{%
   Reaktionsspiel mit Bandgeräten \\
@@ -40,9 +42,8 @@
   animieren.  Daher haben wir die bestehenden Bandlaufwerke mit einem modernen
   Mikrocontroller ausgestattet, der von nun an die Ansteuerung der Hardware
   "ubernimmt.  Dieser Mikrocontroller, die vorhandenen Bandlaufwerke,
-  zusätzliche LEDs und ein LCD erm"oglichen es uns die \textit{PDP11} in Arcade
-  "ahnliche Spieleautomaten umzuwandeln.\\ % TODO Singular (TEILE) und Plural
-  %(PDP11) in einem Satz
+  zusätzliche LEDs und ein LCD erm"oglichen es uns die \textit{PDP11} in einen Arcade
+  "ahnlichen Spieleautomaten umzuwandeln.\\ 
   Ziel dieses Projektes ist es, die Hardware fertigzustellen und ein
   Beispielspiel zu implementieren, das es zwei Spielenden erm"oglicht sich in
   ihrer Reaktionszeit zu messen.\\ Als erstes werden wir einen "Uberblick "uber
@@ -68,12 +69,12 @@
 
   \subsection{zus"atzliche Hardware}
     \label{sec:hardware_additional}
-    F"ur dieses Projekt wurde uns ein \textit{SAMR21 Xpro} zur Verf"ugung
+    F"ur dieses Projekt wurde uns ein \textit{SAMR21 Xpro}\footcite{SAMR21XPro} zur Verf"ugung
     gestellt. Der \textit{SAMR21 Xpro} ist ein Evaluationsboard f"ur den
-    \textit{ATSAMR21G18A}. Das Board bietet integrierte Funkunterst"utzung zur
-    Kommunikation und durch den \textit{Cortex-M0+} auch ausreichend Leistung
+    \textit{ATSAMR21G18A}\footcite{ATSAMR21}. Das Board bietet integrierte Funkunterst"utzung zur
+    Kommunikation und durch den \textit{Cortex-M0+}\footcite{CORTEXM0} auch ausreichend Leistung
     um unser Projekt umzusetzen. Im Zuge der Softwareentwicklung sind wir nicht
-    an die Leistungsgrenzen des Chips gesto"sen, allerdings bietet er nicht
+
     gen"ugend I/O-Pins zur Ansteuerung der gesamten Peripherie.\\
     \begin{wrapfigure}{r}{0.5\textwidth}
       \centering
@@ -81,17 +82,15 @@
       \includegraphics[scale=0.05]{Platine.jpg}
       \captionof{figure}{Mikrocontroller, Multiplexer und H-Br"ucke}
     \end{wrapfigure}
-    In Ermangelung ausreichender I/O-Pins haben wir uns deshalb entschieden die
-    Taster "uber den \textit{S74LS151} zu verwalten. Der \textit{S74LS151} ist
-    ein \( 8 bit \) Multiplexer und erm"oglicht es uns alle Taster mittels
-    Polling abzufragen, allerdings kann immer nur ein Taster gleichzeitig mit
-    einem Interrupt belegt werden.\\ Zur Beleuchtung der Bandlaufwerke haben
-    wir RGB-LED-Streifen verbaut. Diese LED-Streifen sind kompatibel zu dem
-    \textit{WS2811}, der jeweils eine LED steuern und bis zu 1024 mal in Reihe
-    geschaltet werden kann um komplette Animationen darzustellen. Die
-    existierenden Gl"uhlampen der Taster wollten wir ebenfalls durch LED's
-    ersetzen die auf dem \textit{WS2811} basieren, allerdings gab es hier
-    Lieferprobleme.\\
+    In Ermangelung ausreichender I/O-Pins haben wir uns deshalb entschieden die Taster "uber den
+    \textit{S74LS151}\footcite{S74LS151} zu verwalten. Der \textit{S74LS151} ist
+    ein \( 8 bit \) Multiplexer und erm"oglicht es uns alle Taster mittels Polling abzufragen,
+    allerdings kann immer nur ein Taster gleichzeitig mit einem Interrupt belegt werden.\\ Zur
+    Beleuchtung der Bandlaufwerke haben wir RGB-LED-Streifen verbaut. Diese LED-Streifen sind
+    kompatibel zu \textit{WS2811}\footcite{WS2811}, der jeweils eine LED steuern und bis zu 1024 mal in Reihe
+    geschaltet werden kann um komplette Animationen darzustellen. Die existierenden Gl"uhlampen der
+    Taster wollten wir ebenfalls durch LED's ersetzen die auf dem \textit{WS2811} basieren,
+    allerdings gab es hier Lieferprobleme.\\
     \begin{wrapfigure}{r}{0.5\textwidth}
       \centering
       \label{figure:Bandlaufwerke}
@@ -99,34 +98,31 @@
       \captionof{figure}{Frontansicht der Bandlaufwerke}
     \end{wrapfigure}
     Zur Ansteuerung der Bandlaufwerkmotoren verwenden wir die doppel H-Br"ucke
-    \textit{L298-H}. Diese ben"otigt als einziges Modul eine 12V
+    \textit{L298-H}\footcite{L298H}. Diese ben"otigt als einziges Modul eine 12V
     Versorgungsspannung.\\ F"ur zuk"unftige Men"uf"uhrung, Eingabe der
     Nicknames und weiteres visuelles Feedback haben wir ein 128x64 Pixel LCD
-    des Typs \textit{DOGL128B-6} verbaut. Dieses Display ist ein Set aus
+    des Typs \textit{DOGL128B-6}\footcite{DOGL128B} verbaut. Dieses Display ist ein Set aus
     Display und Controller und kann einfach "uber das SPI Protokoll verwendet
     werden. Um Kosten an der Hardware zu sparen haben wir uns dazu entschieden
     kein zugehöriges Backlight dazu zukaufen, sondern jeweils zwei
     \textit{WS2811} RGB-LEDs f"ur die Hintergrundbeleuchtung zu verwenden.\\
-    Unsere verbaute Hardware braucht eine \( 3,3 V \), \( 5 V \) und \( 12 V \)
-    Spannungsversorgung und anstatt selbst ein Netzteil zu bauen
-    %TODO dürfen wir eh nicht
-    oder zu kaufen haben wir ein ATX-Netzteil aus Restbest"anden f"ur beide
+    Unsere verbaute Hardware braucht eine \( 3,3 V \), \( 5 V \) und \( 12 V \) Spannungsversorgung
+    und anstatt ein neues Netzteil zu kaufen, haben wir ein ATX-Netzteil aus Restbest"anden f"ur beide
     Bandlaufwerke benutzt.
 
   \subsection{Treiber}
     \label{sec:hardware_driver}
     Nach der Entwicklung der Hardwareplattform haben wir f"ur jede Peripherie
     einen Teiber entwickelt, da diese noch nicht von RIOT selbst unterstützt
-    wurden. Jeder Treiber ist entsprechend den von RIOT angebotenen
-    %TODO angelehnt an Beispieltreiber
-    Beispieltreibern implementiert. Die Treiberimplementierung war für alle
+    wurden. Jeder Treiber ist angelehnt an die von RIOT angebotenen
+    Beispieltreiber implementiert. Die Treiberimplementierung war für alle
     Peripheriegeräte außer dem \textit{WS2811} unkompliziert. Der
     \textit{WS2811} nutzt eine Schieberegisterarchitektur.  "Uber einen
     digitalen Eingang zum Empfang und einen digitalen Ausgang zum Senden an den
     nächsten \textit{WS2811} in Reihe werden je LED \( 24 bit\) an
     Farbinformationen "ubertragen.  Jeder \textit{WS2811} steuert eine LED und
     bis zu 1024 \textit{WS2811} können so miteinander verkettet werden, um ganze
-    LED-Arrays zu steuern. Da der WS2811 nur ein OneWire-Protokoll und keine
+    LED-Arrays zu steuern. Da der \textit{WS2811} nur ein OneWire-Protokoll und keine
     zusätzliche Taktung anbietet, benötigt er für die Unterscheidung zwischen 0
     und 1 in seinem Protokoll harte Timings. Für unser Projekt haben wir zwei
     verschiedene \textit{WS2811} kompatible LED-Sets gekauft. Das erste ist ein
@@ -197,7 +193,7 @@
   \subsection{Netzwerkkommunikation}
     \label{sec:net}
     Die Kommunikation zwischen den Plattformen erfolgt über das RESTful
-    Constrained Application Protocol, CoAP, das Nachrichten über UDP und IPv6
+    Constrained Application Protocol, CoAP\footcite{COAP}, das Nachrichten über UDP und IPv6
     sendet, wie in Abbildung \ref{fig:seq_diagram} . Ein Mikrocontroller führt
     eine Client-Application aus, die das Spiel steuert. Die benötigten
     Informationen werden von einer Server-Anwendung bereitgestellt, die auf
@@ -209,7 +205,8 @@
     zweiten Zustand zu starten, erh"alt im dritten Zustand die Reaktionszeit
     und fordert anschließend jede Maschine auf, anzuzeigen, ob der Spielende
     gewonnen oder verloren hat.  Zusätzlich verfügen beide Server über eine
-    Ressource, die auf Wunsch von team2 Highscore-Informationen im SenML-Format
+    Ressource, die auf Wunsch von \textit{Team2} Highscore-Informationen im
+    SenML-Format\footcite{SENML}
     bereitstellt.
     \begin{figure}[h]
       \centering
@@ -222,7 +219,7 @@
   \subsection{Probleme}
   In der aktuellen Implementierung bleiben noch ein paar Vorhaben unvollendet.
   Zum einen fehlen wie bereits erw"ahnt die passenden LEDs zu den
-  \textit{WS2811} Controllern für die Kn"opfe. Weiterhin gibt es eine
+  \textit{WS2811} Controllern für die Taster. Weiterhin gibt es eine
   ungekl"arte Fehlerquelle im Zusammenhang mit einem der LCD. Hier scheint
   ein Wackelkontakt oder falsch eingestellter Kontrast zu einem unlesbaren
   Display zu f"uhren. Da das gleiche Programm auf dem anderen LCD zu einer
@@ -232,16 +229,13 @@
   Mainboard, welches die einzelnen Hardwarebausteine verbindet.\\ Die
   Netzwerkkommunikation ist derzeit unzuverla"ssig. Verlorene Pakete können in
   gewissen Situationen zu Deadlocks f"uhren.\\
-  % TODO: konsistente API zu netzwerkcode, keine trennung von businnes zu
-  % netzwerk
   Zus"atzlich zu den offenen Problemen an unserem Projekt ist die Integration
   in das Softwareprojekt von \textit{Team2} ungen"ugend. Die Schnittstelle zur
   "Ubertragung der Highscoredaten wurde nur grob kommuniziert, nicht getestet
   und ist unseres Wissens nach nicht in der aktuellen Version von
   \textit{Team2} eingebunden.
   \subsection{R"uckblick auf Zeitplan}
-  Der urspr"ungliche Zeitplan konnte aus Gr"unden nicht eingehalten werden.
-  % TODO: Aus welchen Gründen?
+  Der urspr"ungliche Zeitplan konnte aus folgenden Gr"unden nicht eingehalten werden.
   Die Entwicklung von Hardwarel"osungen und das Umsetzen dieser L"osungen haben
   ein Vielfaches der geplanten Zeit in Anspruch genommen. Zudem kostete das
   Debugging der \textit{WS2811} und der zugeh"origen LEDs unerwartet viel Zeit.
@@ -287,5 +281,7 @@
   Applikation oder zumindest f"ur die Spielebibliothek nachgedacht werden. F"ur
   RIOT selbst ist gerade ein OTA-Update in Entwicklung das nach Fertigstellung
   genutzt werden kann.\\\\
+
+  \printbibliography
 
 \end{document}
